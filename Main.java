@@ -11,7 +11,7 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
         
-        String filePath = "test.wav";
+        String filePath = "audio/test.wav";
         File file = new File(filePath);
         try(AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
             AudioFormat format = audioStream.getFormat();
