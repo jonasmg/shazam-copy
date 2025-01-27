@@ -10,7 +10,7 @@ public class audioPlayerCopy {
         // How to PLAY AUDIO with Java (.wav, .au, .aiff)
 
         String filePath = "audio/mixkit-footsteps-on-tall-grass-532.wav";
-
+  
         File file = new File(filePath);
 
         try(Scanner scanner = new Scanner(System.in);
