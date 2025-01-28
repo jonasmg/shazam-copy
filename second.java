@@ -9,34 +9,60 @@ public class second extends JFrame implements ActionListener {
 
     private Timer animator;
     private int delay = 1, totalFrames = 1000, currentFrame = 0;
-    private int quality = 4;
+    private int quality = 1;
+    private static int height = 350;
     
     private static JLabel label;
     private static JTextField qualityTextField;
     private static JTextField qualityText;
+    private static JTextField heightTextField;
+    private static JTextField heightText;
     private JButton button;
 
+    // Array to hold samples:
+    private int[] samples = new int[8000];
+
     public second() {
+        // Set samples to 0
+        for (int i = 0; i < 8000; i++) {
+            samples[i] = 0;
+        }
+
         // Label with text: "quality"
         JLabel qualityLabel = new JLabel("Quality: ");
         qualityLabel.setBounds(20, 20, 100, 30);
         add(qualityLabel);
+
+        // Label with text: "height"
+        JLabel heightLabel = new JLabel("Height: ");
+        heightLabel.setBounds(240, 20, 100, 30);
+        add(heightLabel);
         
         qualityTextField = new JTextField("" + quality);
         qualityText = new JTextField("" + quality);
+        heightTextField = new JTextField("" + height);
+        heightText = new JTextField("" + height);
+
         button = new JButton("Update");
         setLayout(null);
         Dimension size1 = qualityTextField.getPreferredSize();
         Dimension size2 = qualityText.getPreferredSize();
-        Dimension size3 = button.getPreferredSize();
+        Dimension size3 = heightTextField.getPreferredSize();
+        Dimension size4 = heightText.getPreferredSize();
+        Dimension size5 = button.getPreferredSize();
         qualityText.setEditable(false);
+        heightText.setEditable(false);
         qualityTextField.setBounds(20, 50, 200, size1.height);
+        heightTextField.setBounds(240, 50, 200, size3.height);
         qualityText.setBounds(20, 100, 200, size2.height);
-        button.setBounds(20, 150, size3.width, size3.height);
+        heightText.setBounds(240, 100, 200, size4.height);
+        button.setBounds(20, 150, size5.width, size5.height);
         button.addActionListener(this);
 
         add(qualityTextField);
+        add(heightTextField);
         add(qualityText);
+        add(heightText);
         add(button);
 
         // Create panel
@@ -75,8 +101,14 @@ public class second extends JFrame implements ActionListener {
             for (int i = 0; i < (800/quality); i += quality) {
                 // draw a line from the last point to the next point
                 int ii = i*quality+currentFrame;
-                int iii = (i+quality)*quality+currentFrame+1;
-                g2.draw(new Line2D.Double(i*quality, 100 + 50 * Math.sin(ii * Math.PI / 180), (i+quality) * quality, 100 + 50 * Math.sin((iii) * Math.PI / 180)));
+                int iii = (i+quality)*quality+currentFrame;
+                //g2.draw(new Line2D.Double(i*quality, 100 + 50 * Math.sin(ii * Math.PI / 180), (i+quality) * quality, 100 + 50 * Math.sin((iii) * Math.PI / 180)));
+                
+                // Draw samples:
+                if (i+quality+currentFrame >= 8000) {
+                    break;
+                }
+                g2.draw(new Line2D.Double(i*quality, 100 + samples[i+currentFrame] / height, (i+quality) * quality, 100 + samples[i+quality+currentFrame] / height));
             }
 
             // Draw frame number:
@@ -114,8 +146,14 @@ public class second extends JFrame implements ActionListener {
             } catch (NumberFormatException ex) {
                 return;
             }
+            try {
+                height = Integer.parseInt(heightTextField.getText());
+            } catch (NumberFormatException ex) {
+                return;
+            }
             // Get text field and set it to what was written
             qualityText.setText(qualityTextField.getText());
+            heightText.setText(heightTextField.getText());
         }
         if (e.getSource() == animator) {
             currentFrame++;
@@ -124,6 +162,9 @@ public class second extends JFrame implements ActionListener {
             }
             repaint();
         }
+    }
 
+    public void setSamples(int[] samples) {
+        this.samples = samples;
     }
 }
