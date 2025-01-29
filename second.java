@@ -1,32 +1,30 @@
 import java.awt.*;
-import javax.swing.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.awt.geom.Line2D.Double;
+import javax.swing.*;
 
 
 public class second extends JFrame implements ActionListener {
 
     private Timer animator;
-    private int delay = 1, totalFrames = 1000, currentFrame = 0;
+    private int delay = 10, totalFrames = 1000, currentFrame = 0;
     private int quality = 1;
-    private static int height = 350;
+    private int height = 250;
+    private double scale = 10.0;
+    private int sampleRate = 44100;
     
     private static JLabel label;
     private static JTextField qualityTextField;
     private static JTextField qualityText;
     private static JTextField heightTextField;
     private static JTextField heightText;
+    private static JTextField speedTextField;
+    private static JTextField speedText;
+    private static JTextField scaleTextField;
+    private static JTextField scaleText;
     private JButton button;
 
-    // Array to hold samples:
-    private int[] samples = new int[8000];
-
-    public second() {
-        // Set samples to 0
-        for (int i = 0; i < 8000; i++) {
-            samples[i] = 0;
-        }
+    public second(int[] samples) {
 
         // Label with text: "quality"
         JLabel qualityLabel = new JLabel("Quality: ");
@@ -35,13 +33,27 @@ public class second extends JFrame implements ActionListener {
 
         // Label with text: "height"
         JLabel heightLabel = new JLabel("Height: ");
-        heightLabel.setBounds(240, 20, 100, 30);
+        heightLabel.setBounds(140, 20, 100, 30);
         add(heightLabel);
+
+        // Label with text: "Speed"
+        JLabel scrollLabel = new JLabel("Scroll speed: ");
+        scrollLabel.setBounds(260, 20, 100, 30);
+        add(scrollLabel);
+
+        // Label with text: "scale"
+        JLabel scaleLabel = new JLabel("Scale: ");
+        scaleLabel.setBounds(380, 20, 100, 30);
+        add(scaleLabel);
         
         qualityTextField = new JTextField("" + quality);
         qualityText = new JTextField("" + quality);
         heightTextField = new JTextField("" + height);
         heightText = new JTextField("" + height);
+        speedTextField = new JTextField("" + delay);
+        speedText = new JTextField("" + delay + "ms");
+        scaleTextField = new JTextField("" + scale);
+        scaleText = new JTextField("" + scale);
 
         button = new JButton("Update");
         setLayout(null);
@@ -49,20 +61,37 @@ public class second extends JFrame implements ActionListener {
         Dimension size2 = qualityText.getPreferredSize();
         Dimension size3 = heightTextField.getPreferredSize();
         Dimension size4 = heightText.getPreferredSize();
-        Dimension size5 = button.getPreferredSize();
+        Dimension size5 = speedTextField.getPreferredSize();
+        Dimension size6 = speedText.getPreferredSize();
+        Dimension size7 = scaleTextField.getPreferredSize();
+        Dimension size8 = scaleText.getPreferredSize();
+
+        Dimension sizeButton = button.getPreferredSize();
         qualityText.setEditable(false);
         heightText.setEditable(false);
-        qualityTextField.setBounds(20, 50, 200, size1.height);
-        heightTextField.setBounds(240, 50, 200, size3.height);
-        qualityText.setBounds(20, 100, 200, size2.height);
-        heightText.setBounds(240, 100, 200, size4.height);
-        button.setBounds(20, 150, size5.width, size5.height);
+        speedText.setEditable(false);
+        scaleText.setEditable(false);
+        qualityTextField.setBounds(20, 50, 100, size1.height);
+        heightTextField.setBounds(140, 50, 100, size3.height);
+        qualityText.setBounds(20, 100, 100, size2.height);
+        heightText.setBounds(140, 100, 100, size4.height);
+        speedTextField.setBounds(260, 50, 100, size5.height);
+        speedText.setBounds(260, 100, 100, size6.height);
+        scaleTextField.setBounds(380, 50, 100, size7.height);
+        scaleText.setBounds(380, 100, 100, size8.height);
+
+        button.setBounds(20, 150, sizeButton.width, sizeButton.height);
         button.addActionListener(this);
 
         add(qualityTextField);
         add(heightTextField);
         add(qualityText);
         add(heightText);
+        add(speedTextField);
+        add(speedText);
+        add(scaleTextField);
+        add(scaleText);
+
         add(button);
 
         // Create panel
@@ -73,64 +102,96 @@ public class second extends JFrame implements ActionListener {
         // Add panel to the frame
         add(topPanel);
 
-        // Add timer
         animator = new Timer(delay, this);
-        animator.start();
+
+        // Add timer
+        if (delay < 1) {
+            animator.stop();
+        } else {
+            animator.start();
+        }
 
         // Custom panel to draw a line
         JPanel drawPanel = new JPanel() {
             protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g;
-            // draw rectangle behind lines 800 wide and 200 tall
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.fill(new Rectangle2D.Double(0, 0, 800, 200));
-            // set thickness of the line
-            g2.setStroke(new BasicStroke(2));
-            // set color of the line to dark gray
-            g2.setColor(Color.DARK_GRAY);
-            // draw coordinate lines
-            g2.draw(new Line2D.Double(0, 100, 800, 100));
-            g2.draw(new Line2D.Double(400, 0, 400, 200));
+                super.paintComponent(g);
+                int offX = 50;
+                int offY = 50;
+                Graphics2D g2 = (Graphics2D) g;
+                // draw rectangle behind lines 800 wide and 200 tall
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 800, 200));
+                // set thickness of the line
+                g2.setStroke(new BasicStroke(2));
+                // set color of the line to dark gray
+                g2.setColor(Color.DARK_GRAY);
+                // draw coordinate lines
+                g2.draw(new Line2D.Double(0+offX, 100+offY, 800+offX, 100+offY));
+                g2.draw(new Line2D.Double(400+offX, 0+offY, 400+offX, 200+offY));
 
-            // set thickness of the line
-            g2.setStroke(new BasicStroke(2));
-            // set color of the line to black
-            g2.setColor(Color.BLACK);
-            // Loop for drawing a sine wave
-            for (int i = 0; i < (800/quality); i += quality) {
-                // draw a line from the last point to the next point
-                int ii = i*quality+currentFrame;
-                int iii = (i+quality)*quality+currentFrame;
-                //g2.draw(new Line2D.Double(i*quality, 100 + 50 * Math.sin(ii * Math.PI / 180), (i+quality) * quality, 100 + 50 * Math.sin((iii) * Math.PI / 180)));
-                
-                // Draw samples:
-                if (i+quality+currentFrame >= 8000) {
-                    break;
+                // set thickness of the line
+                g2.setStroke(new BasicStroke(2));
+                // set color of the line to black
+                g2.setColor(Color.BLACK);
+                // Loop for drawing a sine wave
+                for (int i = 0; i < (800/quality); i += quality) {
+                    // draw a line from the last point to the next point
+                    int ii = i*quality+currentFrame;
+                    int iii = (i+quality)*quality+currentFrame;
+                    // Sine wave test:
+                    //g2.draw(new Line2D.Double(i*quality, 100 + 50 * Math.sin(ii * Math.PI / 180), (i+quality) * quality, 100 + 50 * Math.sin((iii) * Math.PI / 180)));
+                    
+                    // Draw samples:
+                    if (iii >= samples.length) {
+                        break;
+                    }
+                    g2.draw(new Line2D.Double((i*quality)+offX, (100 + samples[(int)(ii*scale)] / height)+offY, ((i+quality) * quality)+offX, (100 + samples[(int)(iii*scale)] / height)+offY));
                 }
-                g2.draw(new Line2D.Double(i*quality, 100 + samples[i+currentFrame] / height, (i+quality) * quality, 100 + samples[i+quality+currentFrame] / height));
-            }
 
-            // Draw frame number:
-            g2.drawString(Integer.toString(currentFrame), 200, 20);
+                // Draw frame number:
+                g2.drawString(Integer.toString(currentFrame), 0+offX, 10);
 
-            // draw around rectangle
-            g2.setColor(Color.BLACK);
-            // set thickness of the line
-            g2.setStroke(new BasicStroke(4));
-            // lines of box
-            g2.draw(new Line2D.Double(0, 0, 800, 0));
-            g2.draw(new Line2D.Double(800, 00, 800, 200));
-            g2.draw(new Line2D.Double(800, 200, 0, 200));
-            g2.draw(new Line2D.Double(0, 200, 0, 0));
+                double time0 = (double) (scale * (0+currentFrame)) / sampleRate;
+                double time1 = (double) (scale * (400+currentFrame)) / sampleRate;
+                double time2 = (double) (scale * (800+currentFrame)) / sampleRate;
+
+                // Drawing measures of time
+                if (scale <= 5) {
+                    g2.drawString(String.format("%.4f sec", time0), 0+offX, 40);
+                    g2.drawString(String.format("%.4f sec", time1), 400+offX-35, 40);
+                    g2.drawString(String.format("%.4f sec", time2), 800+offX-70, 40);
+                } else if (scale <= 40) {
+                    g2.drawString(String.format("%.3f sec", time0), 0+offX, 40);
+                    g2.drawString(String.format("%.3f sec", time1), 400+offX-35, 40);
+                    g2.drawString(String.format("%.3f sec", time2), 800+offX-70, 40);
+                } else {
+                    g2.drawString(String.format("%.2f sec", time0), 0+offX, 40);
+                    g2.drawString(String.format("%.2f sec", time1), 400+offX-35, 40);
+                    g2.drawString(String.format("%.2f sec", time2), 800+offX-70, 40);
+                }
+
+                // Draw measures of amplitude
+                g2.drawString("1", 0+offX-20, 0+offY);
+                g2.drawString("0", 0+offX-20, 100+offY);
+                g2.drawString("-1", 0+offX-20, 200+offY);
+
+                // draw around rectangle
+                g2.setColor(Color.BLACK);
+                // set thickness of the line
+                g2.setStroke(new BasicStroke(4));
+                // lines of box
+                g2.draw(new Line2D.Double(0+offX, 0+offY, 800+offX, 0+offY));
+                g2.draw(new Line2D.Double(800+offX, 0+offY, 800+offX, 200+offY));
+                g2.draw(new Line2D.Double(800+offX, 200+offY, 0+offX, 200+offY));
+                g2.draw(new Line2D.Double(0+offX, 200+offY, 0+offX, 0+offY));
             }
         };
-        drawPanel.setBounds(25, 250, 800, 200);
+        drawPanel.setBounds(0, 250, 900, 300);
         add(drawPanel);
 
         //label = new JLabel("This is a label");
         //setLayout(new FlowLayout());
-        setSize(850,500);
+        setSize(900,600);
         // set place of the window to the center of the screen
         setLocationRelativeTo(null);
         setTitle("First Component");
@@ -151,9 +212,32 @@ public class second extends JFrame implements ActionListener {
             } catch (NumberFormatException ex) {
                 return;
             }
+            try {
+                delay = Integer.parseInt(speedTextField.getText());
+            } catch (NumberFormatException ex) {
+                return;
+            }
+            try {
+                scale = Double.parseDouble(scaleTextField.getText());
+            } catch (NumberFormatException ex) {
+                return;
+            }
             // Get text field and set it to what was written
             qualityText.setText(qualityTextField.getText());
             heightText.setText(heightTextField.getText());
+            speedText.setText(speedTextField.getText() + "ms");
+            scaleText.setText(scaleTextField.getText());
+
+            repaint();
+
+            // Start or stop animation
+            animator = new Timer(delay, this);
+
+            if (delay < 1) {
+                animator.stop();
+            } else {
+                animator.start();
+            }
         }
         if (e.getSource() == animator) {
             currentFrame++;
@@ -162,9 +246,5 @@ public class second extends JFrame implements ActionListener {
             }
             repaint();
         }
-    }
-
-    public void setSamples(int[] samples) {
-        this.samples = samples;
     }
 }
