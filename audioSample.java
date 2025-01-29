@@ -17,7 +17,7 @@ public class audioSample {
     private String filePath = "audio/output.wav";
     private File file = new File(filePath);
     private int numSamples = 8000;
-    private int stepSize = 4;
+    private int stepSize = 1;
     private int[] samples = new int[0];
 
     public int[] getSamples() {
@@ -77,7 +77,7 @@ public class audioSample {
                 extractedSamples++;
             }
             // Print how many samples was extracted
-            System.out.println("Extracted " + samples.length + " samples");
+            System.out.println("Extracted " + samples.length + " samples from " + filePath);
         }
         catch(UnsupportedAudioFileException e){
             System.out.println("Audio file is not supported");
@@ -91,6 +91,44 @@ public class audioSample {
     public void printSamples() {
         for (int i = 0; i < samples.length; i++) {
             System.out.println(samples[i]);
+        }
+    }
+
+    public int getMaxSamples() {
+        try(AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
+            AudioFormat format = audioStream.getFormat();
+            // Print number of frames
+            int numFrames = (int) audioStream.getFrameLength();
+            System.out.println("Number of frames: " + numFrames);
+            return numFrames;
+
+        }
+        catch(UnsupportedAudioFileException e){
+            System.out.println("Audio file is not supported");
+            return 0;
+        }
+        catch(IOException e){
+            System.out.println("Something went wrong");
+            return 0;
+        }
+    }
+
+    public double getLength() {
+        try(AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
+            AudioFormat format = audioStream.getFormat();
+            // Print number of frames
+            int numFrames = (int) audioStream.getFrameLength();
+            // Print duration
+            double duration = numFrames / format.getFrameRate();
+            return duration;
+        }
+        catch(UnsupportedAudioFileException e){
+            System.out.println("Audio file is not supported");
+            return 0;
+        }
+        catch(IOException e){
+            System.out.println("Something went wrong");
+            return 0;
         }
     }
 }

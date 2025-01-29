@@ -7,9 +7,9 @@ import javax.swing.*;
 public class second extends JFrame implements ActionListener {
 
     private Timer animator;
-    private int delay = 10, totalFrames = 1000, currentFrame = 0;
+    private int delay = 0, totalFrames = 1000, currentFrame = 0;
     private int quality = 1;
-    private int height = 250;
+    private int height = 200;
     private double scale = 10.0;
     private int sampleRate = 44100;
     
@@ -142,10 +142,13 @@ public class second extends JFrame implements ActionListener {
                     //g2.draw(new Line2D.Double(i*quality, 100 + 50 * Math.sin(ii * Math.PI / 180), (i+quality) * quality, 100 + 50 * Math.sin((iii) * Math.PI / 180)));
                     
                     // Draw samples:
-                    if (iii >= samples.length) {
-                        break;
+                    if ((int)(iii*scale) < samples.length) {
+                        double x1 = (i*quality)+offX;
+                        double y1 = (100 + samples[(int)(ii*scale)] / height)+offY;
+                        double x2 = ((i+quality) * quality)+offX;
+                        double y2 = (100 + samples[(int)(iii*scale)] / height)+offY;
+                        g2.draw(new Line2D.Double(x1, y1, x2, y2));
                     }
-                    g2.draw(new Line2D.Double((i*quality)+offX, (100 + samples[(int)(ii*scale)] / height)+offY, ((i+quality) * quality)+offX, (100 + samples[(int)(iii*scale)] / height)+offY));
                 }
 
                 // Draw frame number:
@@ -204,20 +207,8 @@ public class second extends JFrame implements ActionListener {
             // Check if text is a number
             try {
                 quality = Integer.parseInt(qualityTextField.getText());
-            } catch (NumberFormatException ex) {
-                return;
-            }
-            try {
                 height = Integer.parseInt(heightTextField.getText());
-            } catch (NumberFormatException ex) {
-                return;
-            }
-            try {
                 delay = Integer.parseInt(speedTextField.getText());
-            } catch (NumberFormatException ex) {
-                return;
-            }
-            try {
                 scale = Double.parseDouble(scaleTextField.getText());
             } catch (NumberFormatException ex) {
                 return;

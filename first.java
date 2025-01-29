@@ -10,7 +10,9 @@ public class first {
 
         audioSample a = new audioSample();
         a.setFile("audio/output.wav");
-        int numSamples = 44100 * 5;
+        int numSamples = a.getMaxSamples();
+        double audioLength = a.getLength();
+        System.out.printf("Audio length: %.2f seconds\n", audioLength);
         a.setNumSamples(numSamples);
         a.setStepSize(1);
         a.computeSamples();
@@ -21,10 +23,5 @@ public class first {
 
         // Remember: open xming
         // Remember: "export DISPLAY =:0" before running
-
-        //f.add(s);
-        //f.setSize(800, 500);
-        //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //f.setVisible(true);
     }
 }
