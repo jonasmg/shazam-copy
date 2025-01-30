@@ -3,12 +3,8 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import javax.swing.JFrame;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
-import javax.sound.sampled.*;
 
 public class audioSample {
     // Get array of bytes from audio file:
@@ -96,7 +92,6 @@ public class audioSample {
 
     public int getMaxSamples() {
         try(AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
-            AudioFormat format = audioStream.getFormat();
             // Print number of frames
             int numFrames = (int) audioStream.getFrameLength();
             System.out.println("Number of frames: " + numFrames);

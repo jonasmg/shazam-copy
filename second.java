@@ -2,16 +2,15 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
-
 
 public class second extends JFrame implements ActionListener {
 
     private Timer animator;
-    private int delay = 0, totalFrames = 1000, currentFrame = 0;
-    private int quality = 1;
-    private int height = 200;
-    private double scale = 10.0;
+    private int delay = 0, currentFrame = 0;
+    private final int totalFrames = 10000;
+    private int quality = 5;
+    private int height = 350;
+    private double scale = 100;
     private int sampleRate = 44100;
     
     private static JLabel label;
@@ -24,8 +23,6 @@ public class second extends JFrame implements ActionListener {
     private static JTextField scaleTextField;
     private static JTextField scaleText;
     private JButton button;
-
-    private BufferedImage buffer;
 
     public second(int[] samples) {
 
@@ -116,6 +113,7 @@ public class second extends JFrame implements ActionListener {
 
         // Custom panel to draw a line
         JPanel drawPanel = new JPanel() {
+            @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 int offX = 50;
@@ -144,8 +142,8 @@ public class second extends JFrame implements ActionListener {
 
                 // Draw samples:
                 for (int i = 0; i < 800*quality; i++) {
-                    double ii = (i*scale+currentFrame)/quality;
-                    double iii = ((i+1)*scale+currentFrame)/quality;
+                    double ii = (i*scale+currentFrame*quality)/quality;
+                    double iii = ((i+1)*scale+currentFrame*quality)/quality;
                     if (iii < samples.length) {
                         double x1 = (i/quality)+offX;
                         double y1 = samples[(int)(ii)]/height+offY2;
@@ -166,10 +164,26 @@ public class second extends JFrame implements ActionListener {
                 // Draw frame number:
                 g2.drawString(Integer.toString(currentFrame), 0+offX, 10);
 
+                // Calculate integral of shown graph/samples with quality
+                double integral = 0;
+                for (int i = 0; i < 800*quality; i++) {
+                    double ii = (i*scale+currentFrame*quality)/quality;
+                    double iii = ((i+1)*scale+currentFrame*quality)/quality;
+                    if (iii < samples.length) {
+                        double y1 = samples[(int)(ii)];
+                        double y2 = samples[(int)(iii)];
+                        // Absolute
+                        integral -= (y1+y2)/2/quality*scale;
+                    }
+                }
+                // Print integral shown
+                g2.drawString(String.format("Integral: %.2f", integral), 70+offX, 10);
+
+                // Calculate time
                 double time0 = (double) ((0*scale+currentFrame)) / sampleRate;
                 double time1 = (double) ((400*scale+currentFrame)) / sampleRate;
                 double time2 = (double) ((800*scale+currentFrame)) / sampleRate;
-
+                
                 // Drawing measures of time
                 if (scale <= 5) {
                     g2.drawString(String.format("%.4f sec", time0), 0+offX, 40);
@@ -204,9 +218,76 @@ public class second extends JFrame implements ActionListener {
         drawPanel.setBounds(0, 250, 900, 300);
         add(drawPanel);
 
+        // Custom panel to draw a line
+        JPanel drawPanel2 = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                int offX = 50;
+                int offY = 50;
+                Graphics2D g2 = (Graphics2D) g;
+                // Draw rectangle in intire space
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 300, 300));
+                
+                // Draw cross inside rectangle with dark gray color
+                g2.setColor(Color.DARK_GRAY);
+                g2.setStroke(new BasicStroke(2));
+                g2.draw(new Line2D.Double(150+offX, 0+offY, 150+offX, 300+offY));
+                g2.draw(new Line2D.Double(0+offX, 150+offY, 300+offX, 150+offY));
+
+                // Do the funky fourier transform stuff here
+
+
+                // Draw black lines around rectangle
+                g2.setColor(Color.BLACK);
+                g2.setStroke(new BasicStroke(4));
+                g2.draw(new Line2D.Double(0+offX, 0+offY, 300+offX, 0+offY));
+                g2.draw(new Line2D.Double(300+offX, 0+offY, 300+offX, 300+offY));
+                g2.draw(new Line2D.Double(300+offX, 300+offY, 0+offX, 300+offY));
+                g2.draw(new Line2D.Double(0+offX, 300+offY, 0+offX, 0+offY));
+
+            }
+        };
+        drawPanel2.setBounds(0, 520, 400, 400);
+        add(drawPanel2);
+
+        JPanel drawPanel3 = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                int offX = 50;
+                int offY = 50;
+                Graphics2D g2 = (Graphics2D) g;
+                // Draw rectangle in intire space
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 430, 300));
+                
+                // Draw cross inside rectangle with dark gray color
+                g2.setColor(Color.DARK_GRAY);
+                g2.setStroke(new BasicStroke(2));
+                g2.draw(new Line2D.Double(150+offX, 0+offY, 150+offX, 300+offY));
+                g2.draw(new Line2D.Double(0+offX, 150+offY, 300+offX, 150+offY));
+
+                // Do the funky fourier transform stuff here
+
+
+                // Draw black lines around rectangle
+                g2.setColor(Color.BLACK);
+                g2.setStroke(new BasicStroke(4));
+                g2.draw(new Line2D.Double(0+offX, 0+offY, 300+offX, 0+offY));
+                g2.draw(new Line2D.Double(300+offX, 0+offY, 300+offX, 300+offY));
+                g2.draw(new Line2D.Double(300+offX, 300+offY, 0+offX, 300+offY));
+                g2.draw(new Line2D.Double(0+offX, 300+offY, 0+offX, 0+offY));
+
+            }
+        };
+        drawPanel3.setBounds(370, 520, 600, 400);
+        add(drawPanel3);
+
         //label = new JLabel("This is a label");
         //setLayout(new FlowLayout());
-        setSize(900,600);
+        setSize(900,1000);
         // set place of the window to the center of the screen
         setLocationRelativeTo(null);
         setTitle("First Component");
@@ -214,6 +295,7 @@ public class second extends JFrame implements ActionListener {
         //add(label);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == button) {
             // Check if text is a number

@@ -1,15 +1,8 @@
-import javax.swing.JFrame;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
-import javax.sound.sampled.*;
-
 public class first {
     public static void main(String[] args) {
 
         audioSample a = new audioSample();
-        a.setFile("audio/output.wav");
+        a.setFile("audio/test.wav");
         int numSamples = a.getMaxSamples();
         double audioLength = a.getLength();
         System.out.printf("Audio length: %.2f seconds\n", audioLength);
@@ -22,6 +15,6 @@ public class first {
         s.setVisible(true);
 
         // Remember: to open xming
-        // Remember: "export DISPLAY =:0"
+        // Remember: "export DISPLAY=:0"
     }
 }
