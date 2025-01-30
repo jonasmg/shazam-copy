@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 
 
 public class second extends JFrame implements ActionListener {
@@ -23,6 +24,8 @@ public class second extends JFrame implements ActionListener {
     private static JTextField scaleTextField;
     private static JTextField scaleText;
     private JButton button;
+
+    private BufferedImage buffer;
 
     public second(int[] samples) {
 
@@ -113,7 +116,7 @@ public class second extends JFrame implements ActionListener {
 
         // Custom panel to draw a line
         JPanel drawPanel = new JPanel() {
-            protected void paintComponent(Graphics g) {
+            public void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 int offX = 50;
                 int offY = 50;
@@ -132,31 +135,40 @@ public class second extends JFrame implements ActionListener {
                 // set thickness of the line
                 g2.setStroke(new BasicStroke(2));
                 // set color of the line to black
-                g2.setColor(Color.BLACK);
-                // Loop for drawing a sine wave
-                for (int i = 0; i < (800/quality); i += quality) {
-                    // draw a line from the last point to the next point
-                    int ii = i*quality+currentFrame;
-                    int iii = (i+quality)*quality+currentFrame;
-                    // Sine wave test:
-                    //g2.draw(new Line2D.Double(i*quality, 100 + 50 * Math.sin(ii * Math.PI / 180), (i+quality) * quality, 100 + 50 * Math.sin((iii) * Math.PI / 180)));
-                    
-                    // Draw samples:
-                    if ((int)(iii*scale) < samples.length) {
-                        double x1 = (i*quality)+offX;
-                        double y1 = (100 + samples[(int)(ii*scale)] / height)+offY;
-                        double x2 = ((i+quality) * quality)+offX;
-                        double y2 = (100 + samples[(int)(iii*scale)] / height)+offY;
+                g2.setColor(Color.BLUE);
+                // Set alpha to half
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+
+                // Extra Y offset
+                int offY2 = 100+offY;
+
+                // Draw samples:
+                for (int i = 0; i < 800*quality; i++) {
+                    double ii = (i*scale+currentFrame)/quality;
+                    double iii = ((i+1)*scale+currentFrame)/quality;
+                    if (iii < samples.length) {
+                        double x1 = (i/quality)+offX;
+                        double y1 = samples[(int)(ii)]/height+offY2;
+                        double x2 = (i/quality)+1+offX;
+                        double y2 = samples[(int)(iii)]/height+offY2;
                         g2.draw(new Line2D.Double(x1, y1, x2, y2));
                     }
                 }
 
+
+
+                g2.setColor(Color.BLACK);
+                // Set alpha back to full
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+
+
                 // Draw frame number:
                 g2.drawString(Integer.toString(currentFrame), 0+offX, 10);
 
-                double time0 = (double) (scale * (0+currentFrame)) / sampleRate;
-                double time1 = (double) (scale * (400+currentFrame)) / sampleRate;
-                double time2 = (double) (scale * (800+currentFrame)) / sampleRate;
+                double time0 = (double) ((0*scale+currentFrame)) / sampleRate;
+                double time1 = (double) ((400*scale+currentFrame)) / sampleRate;
+                double time2 = (double) ((800*scale+currentFrame)) / sampleRate;
 
                 // Drawing measures of time
                 if (scale <= 5) {
@@ -231,8 +243,8 @@ public class second extends JFrame implements ActionListener {
             }
         }
         if (e.getSource() == animator) {
-            currentFrame++;
-            if (currentFrame == totalFrames) {
+            currentFrame += (int) (1 + scale);
+            if (currentFrame >= totalFrames*scale) {
                 currentFrame = 0;
             }
             repaint();

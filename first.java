@@ -21,7 +21,7 @@ public class first {
         second s = new second(samples);
         s.setVisible(true);
 
-        // Remember: open xming
-        // Remember: "export DISPLAY =:0" before running
+        // Remember: to open xming
+        // Remember: "export DISPLAY =:0"
     }
 }
