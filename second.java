@@ -8,10 +8,11 @@ public class second extends JFrame implements ActionListener {
     private Timer animator;
     private int delay = 0, currentFrame = 0;
     private final int totalFrames = 10000;
-    private int quality = 5;
+    private int quality = 1;
     private int height = 350;
-    private double scale = 100;
+    private double scale = 1;
     private int sampleRate = 44100;
+    private double freq = 445;
     
     private static JLabel label;
     private static JTextField qualityTextField;
@@ -22,9 +23,12 @@ public class second extends JFrame implements ActionListener {
     private static JTextField speedText;
     private static JTextField scaleTextField;
     private static JTextField scaleText;
+    private static JTextField freqTextField;
+    private static JTextField freqText;
+
     private JButton button;
 
-    public second(int[] samples) {
+    public second(int[] samples, String file) {
 
         // Label with text: "quality"
         JLabel qualityLabel = new JLabel("Quality: ");
@@ -45,6 +49,11 @@ public class second extends JFrame implements ActionListener {
         JLabel scaleLabel = new JLabel("Scale: ");
         scaleLabel.setBounds(380, 20, 100, 30);
         add(scaleLabel);
+
+        // Label with text: "frequency"
+        JLabel freqLabel = new JLabel("Frequency: ");
+        freqLabel.setBounds(500, 20, 100, 30);
+        add(freqLabel);
         
         qualityTextField = new JTextField("" + quality);
         qualityText = new JTextField("" + quality);
@@ -54,6 +63,8 @@ public class second extends JFrame implements ActionListener {
         speedText = new JTextField("" + delay + "ms");
         scaleTextField = new JTextField("" + scale);
         scaleText = new JTextField("" + scale);
+        freqTextField = new JTextField("" + freq);
+        freqText = new JTextField("" + freq);
 
         button = new JButton("Update");
         setLayout(null);
@@ -65,12 +76,15 @@ public class second extends JFrame implements ActionListener {
         Dimension size6 = speedText.getPreferredSize();
         Dimension size7 = scaleTextField.getPreferredSize();
         Dimension size8 = scaleText.getPreferredSize();
+        Dimension size9 = freqTextField.getPreferredSize();
+        Dimension size10 = freqText.getPreferredSize();
 
         Dimension sizeButton = button.getPreferredSize();
         qualityText.setEditable(false);
         heightText.setEditable(false);
         speedText.setEditable(false);
         scaleText.setEditable(false);
+        freqText.setEditable(false);
         qualityTextField.setBounds(20, 50, 100, size1.height);
         heightTextField.setBounds(140, 50, 100, size3.height);
         qualityText.setBounds(20, 100, 100, size2.height);
@@ -79,6 +93,8 @@ public class second extends JFrame implements ActionListener {
         speedText.setBounds(260, 100, 100, size6.height);
         scaleTextField.setBounds(380, 50, 100, size7.height);
         scaleText.setBounds(380, 100, 100, size8.height);
+        freqTextField.setBounds(500, 50, 100, size9.height);
+        freqText.setBounds(500, 100, 100, size10.height);
 
         button.setBounds(20, 150, sizeButton.width, sizeButton.height);
         button.addActionListener(this);
@@ -91,13 +107,15 @@ public class second extends JFrame implements ActionListener {
         add(speedText);
         add(scaleTextField);
         add(scaleText);
+        add(freqTextField);
+        add(freqText);
 
         add(button);
 
         // Create panel
         JPanel topPanel = new JPanel();
-        topPanel.add(new JLabel("Look at this graph on frame: "));
-        topPanel.setBounds(20, 200, 300, 30);
+        topPanel.add(new JLabel("Look at this graph from " + file));
+        topPanel.setBounds(20, 200, 400, 30);
 
         // Add panel to the frame
         add(topPanel);
@@ -153,31 +171,34 @@ public class second extends JFrame implements ActionListener {
                     }
                 }
 
-
-
                 g2.setColor(Color.BLACK);
                 // Set alpha back to full
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
-
-
                 // Draw frame number:
                 g2.drawString(Integer.toString(currentFrame), 0+offX, 10);
 
-                // Calculate integral of shown graph/samples with quality
-                double integral = 0;
-                for (int i = 0; i < 800*quality; i++) {
-                    double ii = (i*scale+currentFrame*quality)/quality;
-                    double iii = ((i+1)*scale+currentFrame*quality)/quality;
-                    if (iii < samples.length) {
-                        double y1 = samples[(int)(ii)];
-                        double y2 = samples[(int)(iii)];
-                        // Absolute
-                        integral -= (y1+y2)/2/quality*scale;
-                    }
+                // Shown first sample
+                int firstSample = (int) (currentFrame*scale);
+
+                // Shown last sample
+                int lastSample = (int) (currentFrame*scale+800*scale);
+                if (lastSample > samples.length) {
+                    lastSample = samples.length;
                 }
-                // Print integral shown
-                g2.drawString(String.format("Integral: %.2f", integral), 70+offX, 10);
+
+                g2.drawString(String.format("First sample: %d", firstSample), 320+offX, 10);
+                g2.drawString(String.format("Last sample: %d", lastSample), 320+offX, 25);
+
+                // Calculate integral of shown graph/samples with quality
+                int integral = 0;
+                for (int i = firstSample; i < lastSample; i++) {
+                    integral += samples[i];
+                }
+                
+                // Print integral shown with spaces every 3 digits from the back
+                String integralStr = String.format("%,d", integral).replace(',', ' ');
+                g2.drawString("Integral: " + integralStr, 70+offX, 10);
 
                 // Calculate time
                 double time0 = (double) ((0*scale+currentFrame)) / sampleRate;
@@ -237,7 +258,33 @@ public class second extends JFrame implements ActionListener {
                 g2.draw(new Line2D.Double(0+offX, 150+offY, 300+offX, 150+offY));
 
                 // Do the funky fourier transform stuff here
+                // Shown first sample
+                int firstSample = (int) (currentFrame*scale);
 
+                // Shown last sample
+                int lastSample = (int) (currentFrame*scale+800*scale);
+                if (lastSample > samples.length) {
+                    lastSample = samples.length;
+                }
+
+                g2.setColor(Color.BLACK);
+                g2.setStroke(new BasicStroke(2));
+
+                double realFreq = sampleRate/freq;
+                // Draw samples around circle
+                for (int i = firstSample; i < lastSample; i++) {
+                    if (i+1 >= lastSample) {
+                        break;
+                    }
+                    
+                    int sample1 = samples[i]/height;
+                    int sample2 = samples[i+1]/height;
+                    double x1 = sample1*Math.cos((i)*2*Math.PI/realFreq)+150+offX;
+                    double y1 = sample1*Math.sin((i)*2*Math.PI/realFreq)+150+offY;
+                    double x2 = sample2*Math.cos((i+1)*2*Math.PI/realFreq)+150+offX;
+                    double y2 = sample2*Math.sin((i+1)*2*Math.PI/realFreq)+150+offY;
+                    g2.draw(new Line2D.Double(x1, y1, x2, y2));
+                }
 
                 // Draw black lines around rectangle
                 g2.setColor(Color.BLACK);
@@ -304,6 +351,7 @@ public class second extends JFrame implements ActionListener {
                 height = Integer.parseInt(heightTextField.getText());
                 delay = Integer.parseInt(speedTextField.getText());
                 scale = Double.parseDouble(scaleTextField.getText());
+                freq = Double.parseDouble(freqTextField.getText());
             } catch (NumberFormatException ex) {
                 return;
             }
@@ -312,6 +360,7 @@ public class second extends JFrame implements ActionListener {
             heightText.setText(heightTextField.getText());
             speedText.setText(speedTextField.getText() + "ms");
             scaleText.setText(scaleTextField.getText());
+            freqText.setText(freqTextField.getText());
 
             repaint();
 

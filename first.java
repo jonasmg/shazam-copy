@@ -1,8 +1,10 @@
 public class first {
     public static void main(String[] args) {
 
+        String file = "audio/test.wav";
+
         audioSample a = new audioSample();
-        a.setFile("audio/test.wav");
+        a.setFile(file);
         int numSamples = a.getMaxSamples();
         double audioLength = a.getLength();
         System.out.printf("Audio length: %.2f seconds\n", audioLength);
@@ -11,7 +13,7 @@ public class first {
         a.computeSamples();
         int[] samples = a.getSamples();
 
-        second s = new second(samples);
+        second s = new second(samples, file);
         s.setVisible(true);
 
         // Remember: to open xming
