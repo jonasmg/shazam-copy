@@ -64,7 +64,7 @@ public class second extends JFrame implements ActionListener {
         scaleTextField = new JTextField("" + scale);
         scaleText = new JTextField("" + scale);
         freqTextField = new JTextField("" + freq);
-        freqText = new JTextField("" + freq);
+        freqText = new JTextField("" + freq + "Hz");
 
         button = new JButton("Update");
         setLayout(null);
@@ -281,6 +281,8 @@ public class second extends JFrame implements ActionListener {
                     int sample2 = samples[i+1]/height;
                     double x1 = sample1*Math.cos((i)*2*Math.PI/realFreq)+150+offX;
                     double y1 = sample1*Math.sin((i)*2*Math.PI/realFreq)+150+offY;
+                    //double x1 = sample1 * Math.pow(Math.E, (-i*2*Math.PI)) + 150+offX;
+                    //double y1 = sample1 * Math.pow(Math.E, (-i*2*Math.PI)) + 150+offY;
                     double x2 = sample2*Math.cos((i+1)*2*Math.PI/realFreq)+150+offX;
                     double y2 = sample2*Math.sin((i+1)*2*Math.PI/realFreq)+150+offY;
                     g2.draw(new Line2D.Double(x1, y1, x2, y2));
@@ -313,18 +315,71 @@ public class second extends JFrame implements ActionListener {
                 // Draw cross inside rectangle with dark gray color
                 g2.setColor(Color.DARK_GRAY);
                 g2.setStroke(new BasicStroke(2));
-                g2.draw(new Line2D.Double(150+offX, 0+offY, 150+offX, 300+offY));
-                g2.draw(new Line2D.Double(0+offX, 150+offY, 300+offX, 150+offY));
+                //g2.draw(new Line2D.Double(150+offX, 0+offY, 150+offX, 300+offY));
+
+                // draw 4 lines from 430/4 * i to 430/4 * i
+                for (int i = 1; i < 4; i++) {
+                    // Draw vertical lines
+                    g2.draw(new Line2D.Double(430/4*i+offX, 0+offY, 430/4*i+offX, 300+offY));
+                }
+                // Draw text for frequency at 1 10 100 1000 and 10000 starting at x 0
+                g2.drawString("1", 430/4*0+offX, 10+offY-20);
+                g2.drawString("10", 430/4*1+offX, 10+offY-20);
+                g2.drawString("100", 430/4*2+offX, 10+offY-20);
+                g2.drawString("1000", 430/4*3+offX, 10+offY-20);
+                g2.drawString("10000", 430/4*4+offX, 10+offY-20);
+                
+
+                g2.draw(new Line2D.Double(0+offX, 150+offY, 430+offX, 150+offY));
 
                 // Do the funky fourier transform stuff here
+                
+                // // Shown first sample
+                // int firstSample = (int) (currentFrame*scale);
 
+                // // Shown last sample
+                // int lastSample = (int) (currentFrame*scale+800*scale);
+                // if (lastSample > samples.length) {
+                //     lastSample = samples.length;
+                // }
+                // int [] freqs = new int[10000];
+                // // for freq 1 to 10.000
+                // for (int i = 0; i < 10000; i++) {
+                //     for (int ii = firstSample; ii < lastSample; ii++) {
+                //         if (ii+1 >= lastSample) {
+                //             break;
+                //         }
+                //         int sample1 = samples[i]/height;
+                //         //double x1 = sample1*Math.cos((ii)*2*Math.PI/i)+150+offX;
+                //         double y1 = sample1*Math.sin((ii)*2*Math.PI/i)+150+offY;
+                //         //freqs [i] += (int) Math.sqrt(x1*x1 + y1*y1);
+                //         freqs [i] += y1;
+                //     }
+                // }
+                // // draw for each freq divided by 430 sections into a line
+                // int [] freqs2 = new int[430];
+                // int sizes = 10000/430;
+                // for (int i = 0; i < 430; i++) {
+                //     for (int ii = 0; ii < sizes; ii++) {
+                //         freqs2[i] += freqs[i*sizes+ii]/430;
+                //     }
+                // }
+
+                // // Draw the 430 sample lines
+                // for (int i = 0; i < 430; i++) {
+                //     int x1 = i+offX;
+                //     int y1 = 150+offY;
+                //     int x2 = i+offX;
+                //     int y2 = 150 + offY - (int)(freqs2[i] / (100 * scale));
+                //     g2.draw(new Line2D.Double(x1, y1, x2, y2));
+                // }
 
                 // Draw black lines around rectangle
                 g2.setColor(Color.BLACK);
                 g2.setStroke(new BasicStroke(4));
-                g2.draw(new Line2D.Double(0+offX, 0+offY, 300+offX, 0+offY));
-                g2.draw(new Line2D.Double(300+offX, 0+offY, 300+offX, 300+offY));
-                g2.draw(new Line2D.Double(300+offX, 300+offY, 0+offX, 300+offY));
+                g2.draw(new Line2D.Double(0+offX, 0+offY, 430+offX, 0+offY));
+                g2.draw(new Line2D.Double(430+offX, 0+offY, 430+offX, 300+offY));
+                g2.draw(new Line2D.Double(430+offX, 300+offY, 0+offX, 300+offY));
                 g2.draw(new Line2D.Double(0+offX, 300+offY, 0+offX, 0+offY));
 
             }
@@ -360,7 +415,7 @@ public class second extends JFrame implements ActionListener {
             heightText.setText(heightTextField.getText());
             speedText.setText(speedTextField.getText() + "ms");
             scaleText.setText(scaleTextField.getText());
-            freqText.setText(freqTextField.getText());
+            freqText.setText(freqTextField.getText() + "Hz");
 
             repaint();
 

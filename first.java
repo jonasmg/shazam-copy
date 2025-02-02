@@ -1,7 +1,7 @@
 public class first {
     public static void main(String[] args) {
 
-        String file = "audio/test.wav";
+        String file = "audio/output.wav";
 
         audioSample a = new audioSample();
         a.setFile(file);
