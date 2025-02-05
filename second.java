@@ -3,7 +3,7 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
 
-public class second extends JFrame implements ActionListener {
+public class second extends JFrame implements ActionListener, KeyListener, MouseWheelListener {
 
     private Timer animator;
     private int delay = 0, currentFrame = 0;
@@ -13,6 +13,7 @@ public class second extends JFrame implements ActionListener {
     private double scale = 1;
     private int sampleRate = 44100;
     private double freq = 445;
+    private boolean ctrlPressed = false;
     
     private static JLabel label;
     private static JTextField qualityTextField;
@@ -29,6 +30,14 @@ public class second extends JFrame implements ActionListener {
     private JButton button;
 
     public second(int[] samples, String file) {
+
+        // Add key listener
+        addKeyListener(this); // add key listener to the frame
+        setFocusable(true); // make sure the frame is focused
+        setFocusTraversalKeysEnabled(false); // make sure the frame is focused
+
+        // Add mouse wheel listener
+        addMouseWheelListener(this);
 
         // Label with text: "quality"
         JLabel qualityLabel = new JLabel("Quality: ");
@@ -56,17 +65,24 @@ public class second extends JFrame implements ActionListener {
         add(freqLabel);
         
         qualityTextField = new JTextField("" + quality);
+        qualityTextField.addKeyListener(this);
         qualityText = new JTextField("" + quality);
         heightTextField = new JTextField("" + height);
+        heightTextField.addKeyListener(this);
         heightText = new JTextField("" + height);
         speedTextField = new JTextField("" + delay);
+        speedTextField.addKeyListener(this);
         speedText = new JTextField("" + delay + "ms");
         scaleTextField = new JTextField("" + scale);
+        scaleTextField.addKeyListener(this);
         scaleText = new JTextField("" + scale);
         freqTextField = new JTextField("" + freq);
+        freqTextField.addKeyListener(this);
         freqText = new JTextField("" + freq + "Hz");
 
         button = new JButton("Update");
+        button.addKeyListener(this);
+
         setLayout(null);
         Dimension size1 = qualityTextField.getPreferredSize();
         Dimension size2 = qualityText.getPreferredSize();
@@ -436,4 +452,80 @@ public class second extends JFrame implements ActionListener {
             repaint();
         }
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // Print test
+        //System.out.println("Key typed");
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // Print test
+        //System.out.println("Key pressed");
+        // If enter pressed call update
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            actionPerformed(new ActionEvent(button, ActionEvent.ACTION_PERFORMED, null));
+        }
+        // If ctrl is pressed save info for mouse wheel
+        if (e.isControlDown()) {
+            ctrlPressed = true;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // Print test
+        //System.out.println("Key released");
+
+        // If ctrl is released save info for mouse wheel
+        if (!e.isControlDown()) {
+            ctrlPressed = false;
+        }
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        // Print test
+        //System.out.println("Mouse wheel moved");
+
+        // Get the number of notches the mouse wheel was rotated
+        int notches = e.getWheelRotation();
+        
+        if (!ctrlPressed) {
+            // Move audio sample
+            if (notches > 0) {
+                currentFrame += 25 * scale;
+            } else {
+                currentFrame -= 25 * scale;
+                if (currentFrame < 0) {
+                    currentFrame = 0;
+                }
+            }
+        } else {
+            // scale
+            if (notches > 0) {
+                scale *= 1.1;
+            } else {
+                scale /= 1.1;
+            }
+        }
+
+        // Set scale to integer if higher than 10
+        if (scale > 10) {
+            scale = (int) scale;
+        }
+        // If scale is higher than 1 round numbers off to 2 decimals
+        if (scale > 1) {
+            scale = Math.round(scale*100.0)/100.0;
+        } else {
+            scale = Math.round(scale*1000.0)/1000.0;
+        }
+
+        scaleTextField.setText("" + scale);
+        scaleText.setText("" + scale);
+        repaint();
+    }
+
+
 }
