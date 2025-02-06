@@ -195,10 +195,13 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
                 g2.drawString(Integer.toString(currentFrame), 0+offX, 10);
 
                 // Shown first sample
-                int firstSample = (int) (currentFrame*scale);
+                int firstSample = (int) (currentFrame);
+                if (firstSample > samples.length) {
+                    firstSample = samples.length;
+                }
 
                 // Shown last sample
-                int lastSample = (int) (currentFrame*scale+800*scale);
+                int lastSample = (int) (currentFrame+800*scale);
                 if (lastSample > samples.length) {
                     lastSample = samples.length;
                 }
@@ -275,10 +278,13 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
 
                 // Do the funky fourier transform stuff here
                 // Shown first sample
-                int firstSample = (int) (currentFrame*scale);
+                int firstSample = (int) (currentFrame);
+                if (firstSample > samples.length) {
+                    firstSample = samples.length;
+                }
 
                 // Shown last sample
-                int lastSample = (int) (currentFrame*scale+800*scale);
+                int lastSample = (int) (currentFrame+800*scale);
                 if (lastSample > samples.length) {
                     lastSample = samples.length;
                 }
@@ -289,9 +295,31 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
                 double realFreq = sampleRate/freq;
                 // Draw samples around circle
                 for (int i = firstSample; i < lastSample; i++) {
-                    if (i+1 >= lastSample) {
-                        break;
+                    // If more than 10000 samples skip 9 out of 10
+                    if (lastSample - firstSample > 10000) {
+                        if (i % 10 != 0) {
+                            continue;
+                        }
                     }
+                    // If more than 100000 samples skip 99 out of 100
+                    if (lastSample - firstSample > 100000) {
+                        if (i % 100 != 0) {
+                            continue;
+                        }
+                    }
+                    // If more than 1000000 samples skip 999 out of 1000
+                    if (lastSample - firstSample > 1000000) {
+                        if (i % 1000 != 0) {
+                            continue;
+                        }
+                    }
+                    // If more than 10000000 samples skip 9999 out of 10000
+                    if (lastSample - firstSample > 10000000) {
+                        if (i % 10000 != 0) {
+                            continue;
+                        }
+                    }
+                    
                     
                     int sample1 = samples[i]/height;
                     int sample2 = samples[i+1]/height;
@@ -349,15 +377,19 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
                 g2.draw(new Line2D.Double(0+offX, 150+offY, 430+offX, 150+offY));
 
                 // Do the funky fourier transform stuff here
-                
-                // // Shown first sample
-                // int firstSample = (int) (currentFrame*scale);
 
-                // // Shown last sample
-                // int lastSample = (int) (currentFrame*scale+800*scale);
-                // if (lastSample > samples.length) {
-                //     lastSample = samples.length;
-                // }
+                // Shown first sample
+                int firstSample = (int) (currentFrame);
+                if (firstSample > samples.length) {
+                    firstSample = samples.length;
+                }
+
+                // Shown last sample
+                int lastSample = (int) (currentFrame+800*scale);
+                if (lastSample > samples.length) {
+                    lastSample = samples.length;
+                }
+
                 // int [] freqs = new int[10000];
                 // // for freq 1 to 10.000
                 // for (int i = 0; i < 10000; i++) {
