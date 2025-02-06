@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
+import java.util.Arrays;
+
 import javax.swing.*;
 
 public class second extends JFrame implements ActionListener, KeyListener, MouseWheelListener {
@@ -389,38 +391,6 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
                 if (lastSample > samples.length) {
                     lastSample = samples.length;
                 }
-
-                // int [] freqs = new int[10000];
-                // // for freq 1 to 10.000
-                // for (int i = 0; i < 10000; i++) {
-                //     for (int ii = firstSample; ii < lastSample; ii++) {
-                //         if (ii+1 >= lastSample) {
-                //             break;
-                //         }
-                //         int sample1 = samples[i]/height;
-                //         //double x1 = sample1*Math.cos((ii)*2*Math.PI/i)+150+offX;
-                //         double y1 = sample1*Math.sin((ii)*2*Math.PI/i)+150+offY;
-                //         //freqs [i] += (int) Math.sqrt(x1*x1 + y1*y1);
-                //         freqs [i] += y1;
-                //     }
-                // }
-                // // draw for each freq divided by 430 sections into a line
-                // int [] freqs2 = new int[430];
-                // int sizes = 10000/430;
-                // for (int i = 0; i < 430; i++) {
-                //     for (int ii = 0; ii < sizes; ii++) {
-                //         freqs2[i] += freqs[i*sizes+ii]/430;
-                //     }
-                // }
-
-                // // Draw the 430 sample lines
-                // for (int i = 0; i < 430; i++) {
-                //     int x1 = i+offX;
-                //     int y1 = 150+offY;
-                //     int x2 = i+offX;
-                //     int y2 = 150 + offY - (int)(freqs2[i] / (100 * scale));
-                //     g2.draw(new Line2D.Double(x1, y1, x2, y2));
-                // }
 
                 // Draw black lines around rectangle
                 g2.setColor(Color.BLACK);
