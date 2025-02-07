@@ -2,8 +2,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.util.Arrays;
-
 import javax.swing.*;
+
+
 
 public class second extends JFrame implements ActionListener, KeyListener, MouseWheelListener {
 
@@ -32,6 +33,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
     private JButton button;
 
     public second(int[] samples, String file) {
+        double[] doubleSamples = Arrays.stream(samples).asDoubleStream().toArray();
 
         // Add key listener
         addKeyListener(this); // add key listener to the frame
@@ -264,150 +266,186 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
         JPanel drawPanel2 = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                int offX = 50;
-                int offY = 50;
-                Graphics2D g2 = (Graphics2D) g;
-                // Draw rectangle in intire space
-                g2.setColor(Color.LIGHT_GRAY);
-                g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 300, 300));
+            super.paintComponent(g);
+            int offX = 50;
+            int offY = 50;
+            Graphics2D g2 = (Graphics2D) g;
+            // Draw rectangle in entire space
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 200, 200));
+            
+            // Draw cross inside rectangle with dark gray color
+            g2.setColor(Color.DARK_GRAY);
+            g2.setStroke(new BasicStroke(2));
+            g2.draw(new Line2D.Double(100+offX, 0+offY, 100+offX, 200+offY));
+            g2.draw(new Line2D.Double(0+offX, 100+offY, 200+offX, 100+offY));
+
+            // Do the funky fourier transform stuff here
+            // Shown first sample
+            int firstSample = (int) (currentFrame);
+            if (firstSample > samples.length) {
+                firstSample = samples.length;
+            }
+
+            // Shown last sample
+            int lastSample = (int) (currentFrame+800*scale);
+            if (lastSample > samples.length) {
+                lastSample = samples.length;
+            }
+
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(2));
+
+            double realFreq = sampleRate/freq;
+            // Draw samples around circle
+            for (int i = firstSample; i < lastSample; i++) {
+                // If more than 10000 samples skip 9 out of 10
+                if (lastSample - firstSample > 10000) {
+                if (i % 10 != 0) {
+                    continue;
+                }
+                }
+                // If more than 100000 samples skip 99 out of 100
+                if (lastSample - firstSample > 100000) {
+                if (i % 100 != 0) {
+                    continue;
+                }
+                }
+                // If more than 1000000 samples skip 999 out of 1000
+                if (lastSample - firstSample > 1000000) {
+                if (i % 1000 != 0) {
+                    continue;
+                }
+                }
+                // If more than 10000000 samples skip 9999 out of 10000
+                if (lastSample - firstSample > 10000000) {
+                if (i % 10000 != 0) {
+                    continue;
+                }
+                }
                 
-                // Draw cross inside rectangle with dark gray color
-                g2.setColor(Color.DARK_GRAY);
-                g2.setStroke(new BasicStroke(2));
-                g2.draw(new Line2D.Double(150+offX, 0+offY, 150+offX, 300+offY));
-                g2.draw(new Line2D.Double(0+offX, 150+offY, 300+offX, 150+offY));
+                
+                int sample1 = (int) (samples[i]/(height/1.5));
+                int sample2 = (int) (samples[i+1]/(height/1.5));
+                double x1 = sample1*Math.cos((i)*2*Math.PI/realFreq)+100+offX;
+                double y1 = sample1*Math.sin((i)*2*Math.PI/realFreq)+100+offY;
+                double x2 = sample2*Math.cos((i+1)*2*Math.PI/realFreq)+100+offX;
+                double y2 = sample2*Math.sin((i+1)*2*Math.PI/realFreq)+100+offY;
+                g2.draw(new Line2D.Double(x1, y1, x2, y2));
+            }
 
-                // Do the funky fourier transform stuff here
-                // Shown first sample
-                int firstSample = (int) (currentFrame);
-                if (firstSample > samples.length) {
-                    firstSample = samples.length;
-                }
-
-                // Shown last sample
-                int lastSample = (int) (currentFrame+800*scale);
-                if (lastSample > samples.length) {
-                    lastSample = samples.length;
-                }
-
-                g2.setColor(Color.BLACK);
-                g2.setStroke(new BasicStroke(2));
-
-                double realFreq = sampleRate/freq;
-                // Draw samples around circle
-                for (int i = firstSample; i < lastSample; i++) {
-                    // If more than 10000 samples skip 9 out of 10
-                    if (lastSample - firstSample > 10000) {
-                        if (i % 10 != 0) {
-                            continue;
-                        }
-                    }
-                    // If more than 100000 samples skip 99 out of 100
-                    if (lastSample - firstSample > 100000) {
-                        if (i % 100 != 0) {
-                            continue;
-                        }
-                    }
-                    // If more than 1000000 samples skip 999 out of 1000
-                    if (lastSample - firstSample > 1000000) {
-                        if (i % 1000 != 0) {
-                            continue;
-                        }
-                    }
-                    // If more than 10000000 samples skip 9999 out of 10000
-                    if (lastSample - firstSample > 10000000) {
-                        if (i % 10000 != 0) {
-                            continue;
-                        }
-                    }
-                    
-                    
-                    int sample1 = samples[i]/height;
-                    int sample2 = samples[i+1]/height;
-                    double x1 = sample1*Math.cos((i)*2*Math.PI/realFreq)+150+offX;
-                    double y1 = sample1*Math.sin((i)*2*Math.PI/realFreq)+150+offY;
-                    //double x1 = sample1 * Math.pow(Math.E, (-i*2*Math.PI)) + 150+offX;
-                    //double y1 = sample1 * Math.pow(Math.E, (-i*2*Math.PI)) + 150+offY;
-                    double x2 = sample2*Math.cos((i+1)*2*Math.PI/realFreq)+150+offX;
-                    double y2 = sample2*Math.sin((i+1)*2*Math.PI/realFreq)+150+offY;
-                    g2.draw(new Line2D.Double(x1, y1, x2, y2));
-                }
-
-                // Draw black lines around rectangle
-                g2.setColor(Color.BLACK);
-                g2.setStroke(new BasicStroke(4));
-                g2.draw(new Line2D.Double(0+offX, 0+offY, 300+offX, 0+offY));
-                g2.draw(new Line2D.Double(300+offX, 0+offY, 300+offX, 300+offY));
-                g2.draw(new Line2D.Double(300+offX, 300+offY, 0+offX, 300+offY));
-                g2.draw(new Line2D.Double(0+offX, 300+offY, 0+offX, 0+offY));
+            // Draw black lines around rectangle
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(4));
+            g2.draw(new Line2D.Double(0+offX, 0+offY, 200+offX, 0+offY));
+            g2.draw(new Line2D.Double(200+offX, 0+offY, 200+offX, 200+offY));
+            g2.draw(new Line2D.Double(200+offX, 200+offY, 0+offX, 200+offY));
+            g2.draw(new Line2D.Double(0+offX, 200+offY, 0+offX, 0+offY));
 
             }
         };
-        drawPanel2.setBounds(0, 520, 400, 400);
+        drawPanel2.setBounds(0, 520, 300, 300);
         add(drawPanel2);
 
         JPanel drawPanel3 = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                int offX = 50;
-                int offY = 50;
-                Graphics2D g2 = (Graphics2D) g;
-                // Draw rectangle in intire space
-                g2.setColor(Color.LIGHT_GRAY);
-                g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 430, 300));
+            super.paintComponent(g);
+            int offX = 50;
+            int offY = 50;
+            Graphics2D g2 = (Graphics2D) g;
+            // Draw rectangle in entire space
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 800, 300));
+            
+            // Draw cross inside rectangle with dark gray color
+            g2.setColor(Color.DARK_GRAY);
+            g2.setStroke(new BasicStroke(2));
+
+            g2.draw(new Line2D.Double(0+offX, 150+offY, 800+offX, 150+offY));
+
+            // Shown first sample
+            int firstSample = (int) (currentFrame);
+            if (firstSample > samples.length) {
+                firstSample = samples.length;
+            }
+            
+            // Shown last sample
+            int lastSample = (int) (currentFrame+800*scale);
+            if (lastSample > samples.length) {
+                lastSample = samples.length;
+            }
+            
+            // Do the funky fourier transform stuff here
+            // Sampling settings
+            int fs = 44100;   // Sampling rate (Hz)
+            int N = 4096*2;     // Number of samples
+            double fTarget = freq;  // Target frequency (Hz)
+
+            // Calculate the bin index for 1 Hz and 5000 Hz
+            int binStart = (int) Math.round(1.0 * N / fs);   // Corresponding to 1 Hz
+            int binEnd = (int) Math.round(5000.0 * N / fs);  // Corresponding to 5000 Hz
+
+            // Frequency range (1 Hz to 5000 Hz)
+            double minFreq = 100.0;
+            double maxFreq = 5000.0;
+            double pixelWidth = 800.0;  // Width in pixels
+
+            // Scale factor for the X-coordinate to map 1 Hz - 5000 Hz to 0-800 pixels
+            double scaleFactorX = pixelWidth / (maxFreq - minFreq);
+
+            // Scale factor for better visualization
+            double scaleFactor = 100.0 / (N * 1000.0);
+
+            // Compute DFT and plot results
+            for (int i = binStart; i <= binEnd; i++) {  // Loop only through bins corresponding to 1-5000 Hz
+                Complex X_i = computeDFT(samples, i, N, currentFrame);
                 
-                // Draw cross inside rectangle with dark gray color
-                g2.setColor(Color.DARK_GRAY);
-                g2.setStroke(new BasicStroke(2));
-                //g2.draw(new Line2D.Double(150+offX, 0+offY, 150+offX, 300+offY));
+                double magnitude = X_i.magnitude() * scaleFactor; // Proper scaling
 
-                // draw 4 lines from 430/4 * i to 430/4 * i
-                for (int i = 1; i < 4; i++) {
-                    // Draw vertical lines
-                    g2.draw(new Line2D.Double(430/4*i+offX, 0+offY, 430/4*i+offX, 300+offY));
-                }
-                // Draw text for frequency at 1 10 100 1000 and 10000 starting at x 0
-                g2.drawString("1", 430/4*0+offX, 10+offY-20);
-                g2.drawString("10", 430/4*1+offX, 10+offY-20);
-                g2.drawString("100", 430/4*2+offX, 10+offY-20);
-                g2.drawString("1000", 430/4*3+offX, 10+offY-20);
-                g2.drawString("10000", 430/4*4+offX, 10+offY-20);
-                
+                // Map the frequency bin index to pixel space for 1-5000 Hz range
+                double frequency = i * fs / (double) N;  // Calculate frequency corresponding to the bin
+                double xPosition = (frequency - minFreq) * scaleFactorX + offX;  // Map to X position within 800px range
 
-                g2.draw(new Line2D.Double(0+offX, 150+offY, 430+offX, 150+offY));
+                // Draw visualization (only for 1-5000 Hz)
+                g2.draw(new Line2D.Double(
+                xPosition,  // X coordinate (mapped)
+                150 + offY + 150,  // Y start
+                xPosition,  // X coordinate (same as start)
+                150 + 150 + offY - magnitude // Y end (scaled)
+                ));
+            }
 
-                // Do the funky fourier transform stuff here
+            // Draw vertical lines for specific frequencies: 1, 10, 100, 1000, and 5000 Hz
+            int[] frequencyLabels = {100, 500, 1000, 2000, 3000, 4000, 5000};
+            for (int i = 0; i < frequencyLabels.length; i++) {
+                double f = frequencyLabels[i];
+                int bin = (int) Math.round(f / fs * N);  // Map frequency to DFT bin
+                double frequency = bin * fs / (double) N;  // Calculate the frequency
+                double xPosition = (frequency - minFreq) * scaleFactorX + offX;  // Map to X position
 
-                // Shown first sample
-                int firstSample = (int) (currentFrame);
-                if (firstSample > samples.length) {
-                    firstSample = samples.length;
-                }
+                // Draw vertical line for the frequency
+                g2.draw(new Line2D.Double(xPosition, 0 + offY, xPosition, 300 + offY));
 
-                // Shown last sample
-                int lastSample = (int) (currentFrame+800*scale);
-                if (lastSample > samples.length) {
-                    lastSample = samples.length;
-                }
+                // Draw frequency label
+                g2.drawString(Integer.toString(frequencyLabels[i]), (int)(xPosition - 15), 10 + offY - 20); // Adjust label position
+            }
 
-                // Draw black lines around rectangle
-                g2.setColor(Color.BLACK);
-                g2.setStroke(new BasicStroke(4));
-                g2.draw(new Line2D.Double(0+offX, 0+offY, 430+offX, 0+offY));
-                g2.draw(new Line2D.Double(430+offX, 0+offY, 430+offX, 300+offY));
-                g2.draw(new Line2D.Double(430+offX, 300+offY, 0+offX, 300+offY));
-                g2.draw(new Line2D.Double(0+offX, 300+offY, 0+offX, 0+offY));
-
+            // Draw black lines around rectangle
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(4));
+            g2.draw(new Line2D.Double(0+offX, 0+offY, 800+offX, 0+offY));
+            g2.draw(new Line2D.Double(800+offX, 0+offY, 800+offX, 300+offY));
+            g2.draw(new Line2D.Double(800+offX, 300+offY, 0+offX, 300+offY));
+            g2.draw(new Line2D.Double(0+offX, 300+offY, 0+offX, 0+offY));
             }
         };
-        drawPanel3.setBounds(370, 520, 600, 400);
+        drawPanel3.setBounds(0, 820, 900, 400);
         add(drawPanel3);
 
         //label = new JLabel("This is a label");
         //setLayout(new FlowLayout());
-        setSize(900,1000);
+        setSize(900,1200);
         // set place of the window to the center of the screen
         setLocationRelativeTo(null);
         setTitle("First Component");
@@ -530,4 +568,38 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
     }
 
 
+    public static Complex computeDFT(int[] x, int k, int N, int currentSample) {
+        double real = 0;
+        double imag = 0;
+    
+        // Ensure we don't go beyond the array length
+        int endSample = Math.min(currentSample + N, x.length);
+    
+        for (int n = currentSample; n < endSample; n++) {
+            double angle = -2 * Math.PI * k * (n - currentSample) / N; // Adjusted index
+            real += x[n] * Math.cos(angle);
+            imag += x[n] * Math.sin(angle);
+        }
+        
+        return new Complex(real, imag);
+    }
+}
+
+// Helper class to represent complex numbers
+class Complex {
+    private final double re;  // Real part
+    private final double im;  // Imaginary part
+
+    public Complex(double real, double imag) {
+        this.re = real;
+        this.im = imag;
+    }
+
+    public double magnitude() {
+        return Math.sqrt(re * re + im * im);
+    }
+
+    public double phase() {
+        return Math.atan2(im, re);
+    }
 }
