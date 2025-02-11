@@ -15,7 +15,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
     private int height = 350;
     private double scale = 1;
     private int sampleRate = 44100;
-    private double freq = 445;
+    private double freq = 0;
     private boolean ctrlPressed = false;
     
     private static JLabel label;
@@ -262,86 +262,87 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
         drawPanel.setBounds(0, 250, 900, 300);
         add(drawPanel);
 
-        // Custom panel to draw a line
+        // Custom panel to draw around circle
         JPanel drawPanel2 = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            int offX = 50;
-            int offY = 50;
-            Graphics2D g2 = (Graphics2D) g;
-            // Draw rectangle in entire space
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 200, 200));
-            
-            // Draw cross inside rectangle with dark gray color
-            g2.setColor(Color.DARK_GRAY);
-            g2.setStroke(new BasicStroke(2));
-            g2.draw(new Line2D.Double(100+offX, 0+offY, 100+offX, 200+offY));
-            g2.draw(new Line2D.Double(0+offX, 100+offY, 200+offX, 100+offY));
-
-            // Do the funky fourier transform stuff here
-            // Shown first sample
-            int firstSample = (int) (currentFrame);
-            if (firstSample > samples.length) {
-                firstSample = samples.length;
-            }
-
-            // Shown last sample
-            int lastSample = (int) (currentFrame+800*scale);
-            if (lastSample > samples.length) {
-                lastSample = samples.length;
-            }
-
-            g2.setColor(Color.BLACK);
-            g2.setStroke(new BasicStroke(2));
-
-            double realFreq = sampleRate/freq;
-            // Draw samples around circle
-            for (int i = firstSample; i < lastSample; i++) {
-                // If more than 10000 samples skip 9 out of 10
-                if (lastSample - firstSample > 10000) {
-                if (i % 10 != 0) {
-                    continue;
+                super.paintComponent(g);
+                if (freq != 0) {
+                    int offX = 50;
+                    int offY = 50;
+                    Graphics2D g2 = (Graphics2D) g;
+                    // Draw rectangle in entire space
+                    g2.setColor(Color.LIGHT_GRAY);
+                    g2.fill(new Rectangle2D.Double(0+offX, 0+offY, 200, 200));
+                    
+                    // Draw cross inside rectangle with dark gray color
+                    g2.setColor(Color.DARK_GRAY);
+                    g2.setStroke(new BasicStroke(2));
+                    g2.draw(new Line2D.Double(100+offX, 0+offY, 100+offX, 200+offY));
+                    g2.draw(new Line2D.Double(0+offX, 100+offY, 200+offX, 100+offY));
+    
+                    // Do the funky fourier transform stuff here
+                    // Shown first sample
+                    int firstSample = (int) (currentFrame);
+                    if (firstSample > samples.length) {
+                        firstSample = samples.length;
+                    }
+    
+                    // Shown last sample
+                    int lastSample = (int) (currentFrame+800*scale);
+                    if (lastSample > samples.length) {
+                        lastSample = samples.length;
+                    }
+    
+                    g2.setColor(Color.BLACK);
+                    g2.setStroke(new BasicStroke(2));
+    
+                    double realFreq = sampleRate/freq;
+                    // Draw samples around circle
+                    for (int i = firstSample; i < lastSample; i++) {
+                        // If more than 10000 samples skip 9 out of 10
+                        if (lastSample - firstSample > 10000) {
+                        if (i % 10 != 0) {
+                            continue;
+                        }
+                        }
+                        // If more than 100000 samples skip 99 out of 100
+                        if (lastSample - firstSample > 100000) {
+                        if (i % 100 != 0) {
+                            continue;
+                        }
+                        }
+                        // If more than 1000000 samples skip 999 out of 1000
+                        if (lastSample - firstSample > 1000000) {
+                        if (i % 1000 != 0) {
+                            continue;
+                        }
+                        }
+                        // If more than 10000000 samples skip 9999 out of 10000
+                        if (lastSample - firstSample > 10000000) {
+                        if (i % 10000 != 0) {
+                            continue;
+                        }
+                        }
+                        
+                        
+                        int sample1 = (int) (samples[i]/(height/1.5));
+                        int sample2 = (int) (samples[i+1]/(height/1.5));
+                        double x1 = sample1*Math.cos((i)*2*Math.PI/realFreq)+100+offX;
+                        double y1 = sample1*Math.sin((i)*2*Math.PI/realFreq)+100+offY;
+                        double x2 = sample2*Math.cos((i+1)*2*Math.PI/realFreq)+100+offX;
+                        double y2 = sample2*Math.sin((i+1)*2*Math.PI/realFreq)+100+offY;
+                        g2.draw(new Line2D.Double(x1, y1, x2, y2));
+                    }
+    
+                    // Draw black lines around rectangle
+                    g2.setColor(Color.BLACK);
+                    g2.setStroke(new BasicStroke(4));
+                    g2.draw(new Line2D.Double(0+offX, 0+offY, 200+offX, 0+offY));
+                    g2.draw(new Line2D.Double(200+offX, 0+offY, 200+offX, 200+offY));
+                    g2.draw(new Line2D.Double(200+offX, 200+offY, 0+offX, 200+offY));
+                    g2.draw(new Line2D.Double(0+offX, 200+offY, 0+offX, 0+offY));
                 }
-                }
-                // If more than 100000 samples skip 99 out of 100
-                if (lastSample - firstSample > 100000) {
-                if (i % 100 != 0) {
-                    continue;
-                }
-                }
-                // If more than 1000000 samples skip 999 out of 1000
-                if (lastSample - firstSample > 1000000) {
-                if (i % 1000 != 0) {
-                    continue;
-                }
-                }
-                // If more than 10000000 samples skip 9999 out of 10000
-                if (lastSample - firstSample > 10000000) {
-                if (i % 10000 != 0) {
-                    continue;
-                }
-                }
-                
-                
-                int sample1 = (int) (samples[i]/(height/1.5));
-                int sample2 = (int) (samples[i+1]/(height/1.5));
-                double x1 = sample1*Math.cos((i)*2*Math.PI/realFreq)+100+offX;
-                double y1 = sample1*Math.sin((i)*2*Math.PI/realFreq)+100+offY;
-                double x2 = sample2*Math.cos((i+1)*2*Math.PI/realFreq)+100+offX;
-                double y2 = sample2*Math.sin((i+1)*2*Math.PI/realFreq)+100+offY;
-                g2.draw(new Line2D.Double(x1, y1, x2, y2));
-            }
-
-            // Draw black lines around rectangle
-            g2.setColor(Color.BLACK);
-            g2.setStroke(new BasicStroke(4));
-            g2.draw(new Line2D.Double(0+offX, 0+offY, 200+offX, 0+offY));
-            g2.draw(new Line2D.Double(200+offX, 0+offY, 200+offX, 200+offY));
-            g2.draw(new Line2D.Double(200+offX, 200+offY, 0+offX, 200+offY));
-            g2.draw(new Line2D.Double(0+offX, 200+offY, 0+offX, 0+offY));
-
             }
         };
         drawPanel2.setBounds(0, 520, 300, 300);
