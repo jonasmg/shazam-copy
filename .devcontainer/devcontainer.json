@@ -16,7 +16,11 @@
 	"remoteUser": "root",  // ⬅️ Add this line
 	
 	// Install missing X11 libraries after the container is created
-	"postCreateCommand": "apt-get update && apt-get install -y libfreetype6 libxrender1 libxext6 libxtst6 libxi6 && echo 'export DISPLAY=:0' >> /etc/profile"
+	"postCreateCommand": "apt-get update && apt-get install -y libfreetype6 libxrender1 libxext6 libxtst6 libxi6 && echo 'export DISPLAY=:0' >> /etc/profile",
+	
+	// Install missing fonts
+	"postCreateCommand": "sudo apt install fontconfig",
+	"postCreateCommand": "sudo apt install fonts-dejavu"
 
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

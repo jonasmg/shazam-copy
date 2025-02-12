@@ -17,6 +17,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
     private int sampleRate = 44100;
     private double freq = 0;
     private boolean ctrlPressed = false;
+    private int fourierQuality = 1;
     
     private static JLabel label;
     private static JTextField qualityTextField;
@@ -29,6 +30,8 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
     private static JTextField scaleText;
     private static JTextField freqTextField;
     private static JTextField freqText;
+    private static JTextField fourierQualityTextField;
+    private static JTextField fourierQualityText;
 
     private JButton button;
 
@@ -67,6 +70,21 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
         JLabel freqLabel = new JLabel("Frequency: ");
         freqLabel.setBounds(500, 20, 100, 30);
         add(freqLabel);
+
+        // Label with text: "fourier quality"
+        JLabel fourierQualityLabel = new JLabel("Fourier Quality: ");
+        fourierQualityLabel.setBounds(620, 20, 100, 30);
+        add(fourierQualityLabel);
+
+        // Text field for fourier quality
+        fourierQualityTextField = new JTextField("" + fourierQuality);
+        fourierQualityTextField.addKeyListener(this);
+        fourierQualityText = new JTextField("" + fourierQuality);
+        fourierQualityTextField.setBounds(620, 50, 100, 30);
+        fourierQualityText.setBounds(620, 100, 100, 30);
+        add(fourierQualityTextField);
+        fourierQualityText.setEditable(false);
+        add(fourierQualityText);
         
         qualityTextField = new JTextField("" + quality);
         qualityTextField.addKeyListener(this);
@@ -346,6 +364,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
             }
         };
         drawPanel2.setBounds(0, 520, 300, 300);
+
         add(drawPanel2);
 
         JPanel drawPanel3 = new JPanel() {
@@ -380,8 +399,8 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
             // Do the funky fourier transform stuff here
             // Sampling settings
             int fs = 44100;   // Sampling rate (Hz)
-            int N = 4096*2;     // Number of samples
-            double fTarget = freq;  // Target frequency (Hz)
+            int N = 1024*fourierQuality;     // Number of samples
+            // double fTarget = freq;  // Target frequency (Hz)
 
             // Calculate the bin index for 1 Hz and 5000 Hz
             int binStart = (int) Math.round(1.0 * N / fs);   // Corresponding to 1 Hz
@@ -442,6 +461,31 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
             }
         };
         drawPanel3.setBounds(0, 820, 900, 400);
+
+        JButton resizeButton = new JButton("Move Fourier Up");
+        resizeButton.addActionListener(e -> {
+            drawPanel3.setBounds(0, 530, 900, 400);
+            drawPanel3.revalidate();
+            drawPanel3.repaint();
+            drawPanel2.setBounds(0,0,0,0);
+        });
+
+        JButton resizeButton2 = new JButton("Move Fourier Down");
+        resizeButton2.addActionListener(e -> {
+            drawPanel3.setBounds(0, 820, 900, 400);
+            drawPanel3.revalidate();
+            drawPanel3.repaint();
+            drawPanel2.setBounds(0, 520, 300, 300);
+        });
+
+
+        Dimension sizeButton2 = resizeButton.getPreferredSize();
+        Dimension sizeButton3 = resizeButton2.getPreferredSize();
+        resizeButton2.setBounds(340, 150, sizeButton3.width, sizeButton3.height);
+        resizeButton.setBounds(170, 150, sizeButton2.width, sizeButton2.height);
+        add(resizeButton);
+        add(resizeButton2);
+
         add(drawPanel3);
 
         //label = new JLabel("This is a label");
@@ -464,6 +508,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
                 delay = Integer.parseInt(speedTextField.getText());
                 scale = Double.parseDouble(scaleTextField.getText());
                 freq = Double.parseDouble(freqTextField.getText());
+                fourierQuality = Integer.parseInt(fourierQualityTextField.getText());
             } catch (NumberFormatException ex) {
                 return;
             }
@@ -473,6 +518,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
             speedText.setText(speedTextField.getText() + "ms");
             scaleText.setText(scaleTextField.getText());
             freqText.setText(freqTextField.getText() + "Hz");
+            fourierQualityText.setText(fourierQualityTextField.getText());
 
             repaint();
 
