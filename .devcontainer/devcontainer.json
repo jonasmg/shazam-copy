@@ -3,7 +3,7 @@
 {
 	"name": "Java",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/java:1-21-bullseye",
+	//"image": "mcr.microsoft.com/devcontainers/java:1-21-bullseye",
 
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
@@ -13,21 +13,25 @@
 		}
 	},
 
-	"remoteUser": "root",  // ⬅️ Add this line
+	"build": {"dockerfile": "Dockerfile"},
+
+	// "remoteUser": "root",  // ⬅️ Add this line
 	
 	// Install missing X11 libraries after the container is created
-	"postCreateCommand": "apt-get update && apt-get install -y libfreetype6 libxrender1 libxext6 libxtst6 libxi6 && echo 'export DISPLAY=:0' >> /etc/profile",
+	// "postCreateCommand": "apt-get update && apt-get install -y libfreetype6 libxrender1 libxext6 libxtst6 libxi6 && echo 'export DISPLAY=:0' >> /etc/profile",
 	
 	// Install missing fonts
-	"postCreateCommand": "sudo apt install fontconfig",
-	"postCreateCommand": "sudo apt install fonts-dejavu"
+	// "postCreateCommand": "sudo apt install fontconfig"
+	// "postCreateCommand": "sudo apt install fonts-dejavu"
 
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {"extensions": ["ms-azuretools.vscode-docker"]}
+	}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
