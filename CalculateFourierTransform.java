@@ -1,6 +1,6 @@
 public class CalculateFourierTransform {
     private int sampleRate = 44100;
-    private int fourierQuality = 2;
+    private int fourierQuality = 4;
     private int fourierSteps = 1024;
     private double minFreq = 1.0;
     private double maxFreq = 5000.0;
@@ -22,6 +22,10 @@ public class CalculateFourierTransform {
 
     public void setSamples(int[] samples) {
         this.samples = samples;
+    }
+
+    public int getFourierQuality() {
+        return fourierQuality;
     }
 
     public int getPixelHeight() {

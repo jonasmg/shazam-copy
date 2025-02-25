@@ -37,6 +37,7 @@ public class Main {
         int[][] dft = c.calculateDiscreteFourierTransform();
         int pixelHeight = c.getPixelHeight();
         int pixelWidth = c.getPixelWidth();
+        int quality = c.getFourierQuality();
 
         // Print status
         System.out.println("DFT calculated!");
@@ -55,7 +56,10 @@ public class Main {
         // Print status
         System.out.println("Creating image...");
 
-        File file2 = new File("output.png");
+        // File name, original + quality
+        String fileName = file.substring(0, file.length() - 4) + "-Q" + quality + ".png";
+
+        File file2 = new File(fileName);
         try {
             ImageIO.write(bufferedImage, "png", file2);
         } catch (IOException e) {
