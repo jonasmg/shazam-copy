@@ -8,7 +8,9 @@ import java.awt.Color;
 public class Main {
     public static void main(String[] args) {
 
-        String fileName = "piano-audio-test.wav";
+        // String fileName = "piano-audio-test.wav";
+        // String fileName = "piano-audio-test.wav";
+        String fileName = "test.wav";
 
         String filePath = "audio/" + fileName;
 
