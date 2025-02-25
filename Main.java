@@ -8,11 +8,14 @@ import java.awt.Color;
 public class Main {
     public static void main(String[] args) {
 
+        String fileName = "test3.wav";
         // String fileName = "piano-audio-test.wav";
-        // String fileName = "piano-audio-test.wav";
-        String fileName = "test.wav";
-
+        // String fileName = "jonasMusic.wav";
         String filePath = "audio/" + fileName;
+
+        int fourierQuality = 4;
+        int pixelHeight = 1024;
+        int pixelWidth = 1024*2;
 
         audioSample a = new audioSample();
         a.setFile(filePath);
@@ -38,10 +41,12 @@ public class Main {
         // Print status
         System.out.println("Calculating DFT...");
 
+        // Quality
+        c.setFourierQuality(fourierQuality);
+        c.setPixelHeight(pixelHeight);
+        c.setPixelWidth(pixelWidth);
+
         int[][] dft = c.calculateDiscreteFourierTransform();
-        int pixelHeight = c.getPixelHeight();
-        int pixelWidth = c.getPixelWidth();
-        int quality = c.getFourierQuality();
 
         // Print status
         System.out.println("DFT calculated!");
@@ -60,8 +65,8 @@ public class Main {
         // Print status
         System.out.println("Creating image...");
 
-        // File name, original + quality
-        String imageName = "output/" + fileName.substring(0, fileName.length() - 4) + "-Q" + quality + ".png";
+        // File name, original + fourierQuality
+        String imageName = "output/" + fileName.substring(0, fileName.length() - 4) + "-Q" + fourierQuality + ".png";
 
         File file2 = new File(imageName);
         try {

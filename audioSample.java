@@ -48,15 +48,6 @@ public class audioSample {
             // Read the audio data into the byte array
             audioStream.read(bytes);
     
-            // Get user input for number of samples and step size
-            //Scanner scanner = new Scanner(System.in);
-            //System.out.print("Enter the number of samples to extract: ");
-            //numSamples = scanner.nextInt();
-    
-            //System.out.print("Enter the step size (frames between samples): ");
-            //stepSize = scanner.nextInt();
-            //scanner.close();
-    
             //System.out.println("\nExtracted Samples (Left Channel):");
     
             // Loop through the byte array and extract samples based on step size

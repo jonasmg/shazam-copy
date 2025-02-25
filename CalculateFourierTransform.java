@@ -24,6 +24,18 @@ public class CalculateFourierTransform {
         this.samples = samples;
     }
 
+    public void setFourierQuality(int fourierQuality) {
+        this.fourierQuality = fourierQuality;
+    }
+
+    public void setPixelHeight(int pixelHeight) {
+        this.pixelHeight = pixelHeight;
+    }
+
+    public void setPixelWidth(int pixelWidth) {
+        this.pixelWidth = pixelWidth;
+    }
+
     public int getFourierQuality() {
         return fourierQuality;
     }
@@ -45,7 +57,7 @@ public class CalculateFourierTransform {
         int binStart = (int) Math.round(minFreq * N / sampleRate);
         int binEnd = (int) Math.round(maxFreq * N / sampleRate);
 
-        lastSample = samples.length - N;
+        lastSample = samples.length - frameShift;
 
         double maxMagnitude = 1.0; // Keep track of the highest magnitude
 
