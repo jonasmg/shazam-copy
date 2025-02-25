@@ -1,58 +1,88 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
-import javax.sound.sampled.*;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.Color;
 
 public class Main {
-
     public static void main(String[] args) {
 
-        System.out.println("Hello, world!");
+        String file = "audio/piano-audio-test.wav";
 
-        Scanner scanner = new Scanner(System.in);
-        
-        String filePath = "audio/test.wav";
-        File file = new File(filePath);
-        try(AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
-            AudioFormat format = audioStream.getFormat();
-            System.out.println("Audio Format: " + format);
+        audioSample a = new audioSample();
+        a.setFile(file);
+        int numSamples = a.getMaxSamples();
+        double audioLength = a.getLength();
+        System.out.printf("Audio length: %.2f seconds\n", audioLength);
+        a.setNumSamples(numSamples);
+        a.setStepSize(1);
+        a.computeSamples();
+        int[] samples = a.getSamples();
 
-            AudioFormat baseFormat = audioStream.getFormat();
+        // userInterface s = new userInterface(samples, file);
+        // s.setVisible(true);
 
-            // Create a new AudioFormat with PCM_SIGNED encoding
-            AudioFormat decodedFormat = new AudioFormat(
-                AudioFormat.Encoding.PCM_SIGNED, // Encoding to PCM_SIGNED
-                //baseFormat.getSampleRate(),      // Sample rate remains the same as the base format
-                44100,      // Sample rate remains the same as the base format
-                16,                              // Sample size in bits (16 bits)
-                baseFormat.getChannels(),        // Number of channels (same as base format)
-                baseFormat.getChannels() * 2,    // Frame size (number of channels * 2 bytes per sample)
-                //baseFormat.getSampleRate(),      // Frame rate (same as sample rate)
-                //baseFormat.isBigEndian()         // Use the same byte order as the base format
-                44100,                           // Frame rate (same as sample rate)
-                false                            // Use little-endian byte order
-            );
+        // Print update
+        System.out.println("Number of samples: " + numSamples);
 
-            AudioInputStream decodedAudioStream = AudioSystem.getAudioInputStream(decodedFormat, audioStream);
+        // Get resolution from calculateFourierTransform
+        CalculateFourierTransform c = new CalculateFourierTransform();
+        c.setSampleSize(numSamples);
+        c.setSamples(samples);
 
-            Clip clip = AudioSystem.getClip();
-            clip.open(decodedAudioStream);
-            clip.start();
+        // Print status
+        System.out.println("Calculating DFT...");
 
-            String response = scanner.next();
+        int[][] dft = c.calculateDiscreteFourierTransform();
+        int pixelHeight = c.getPixelHeight();
+        int pixelWidth = c.getPixelWidth();
+
+        // Print status
+        System.out.println("DFT calculated!");
+
+        // Create buffered image
+        BufferedImage bufferedImage = new BufferedImage(pixelWidth, pixelHeight, BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < pixelWidth; i++) {
+            for (int j = 0; j < pixelHeight; j++) {
+                int value = dft[j][i];
+                value = Math.min(value, 255);
+                int rgb = new Color(value, value, value).getRGB();
+                bufferedImage.setRGB(i, j, rgb);
+            }
         }
-        catch(LineUnavailableException e) {
-            System.out.println("Audio line is unavailable");
-        }
-        catch(UnsupportedAudioFileException e) {
-            System.out.println("Audio file is not supported");
-        }
-        catch(IOException e) {
-            System.out.println("Something went wrong");
+
+        // Print status
+        System.out.println("Creating image...");
+
+        File file2 = new File("output.png");
+        try {
+            ImageIO.write(bufferedImage, "png", file2);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        scanner.close();
+        // Print status
+        System.out.println("Image created!");
 
-        
+
+        // Remember: to open xming
+        // Remember: "export DISPLAY=:0"
+
+        // sudo apt update
+        // sudo apt install -y fonts-dejavu-core fonts-liberation
+
+        // sudo apt-get install -y x11-xserver-utils
+
+        // sudo apt-get install -y fonts-dejavu fonts-liberation
+
+        // ssh -X user@remote-server
+
+        // sudo apt update
+        // sudo apt install fontconfig
+        // sudo apt install fonts-dejavu
+
+
+
     }
 }

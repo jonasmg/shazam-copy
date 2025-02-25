@@ -73,7 +73,7 @@ public class audioSample {
                 extractedSamples++;
             }
             // Print how many samples was extracted
-            System.out.println("Extracted " + samples.length + " samples from " + filePath);
+            System.out.println("Extracted " + samples.length + " samples from left track of " + filePath);
         }
         catch(UnsupportedAudioFileException e){
             System.out.println("Audio file is not supported");

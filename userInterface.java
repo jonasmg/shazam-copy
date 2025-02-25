@@ -6,7 +6,7 @@ import javax.swing.*;
 
 
 
-public class second extends JFrame implements ActionListener, KeyListener, MouseWheelListener {
+public class userInterface extends JFrame implements ActionListener, KeyListener, MouseWheelListener {
 
     private Timer animator;
     private int delay = 0, currentFrame = 0;
@@ -35,7 +35,7 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
 
     private JButton button;
 
-    public second(int[] samples, String file) {
+    public userInterface(int[] samples, String file) {
         double[] doubleSamples = Arrays.stream(samples).asDoubleStream().toArray();
 
         // Add key listener
@@ -630,7 +630,13 @@ public class second extends JFrame implements ActionListener, KeyListener, Mouse
         
         return new Complex(real, imag);
     }
+
+    // getResolution
+    public int getResolution() {
+        return 1024*fourierQuality;
+    }
 }
+
 
 // Helper class to represent complex numbers
 class Complex {
