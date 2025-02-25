@@ -8,10 +8,12 @@ import java.awt.Color;
 public class Main {
     public static void main(String[] args) {
 
-        String file = "audio/piano-audio-test.wav";
+        String fileName = "piano-audio-test.wav";
+
+        String filePath = "audio/" + fileName;
 
         audioSample a = new audioSample();
-        a.setFile(file);
+        a.setFile(filePath);
         int numSamples = a.getMaxSamples();
         double audioLength = a.getLength();
         System.out.printf("Audio length: %.2f seconds\n", audioLength);
@@ -20,7 +22,7 @@ public class Main {
         a.computeSamples();
         int[] samples = a.getSamples();
 
-        // userInterface s = new userInterface(samples, file);
+        // userInterface s = new userInterface(samples, filePath);
         // s.setVisible(true);
 
         // Print update
@@ -57,9 +59,9 @@ public class Main {
         System.out.println("Creating image...");
 
         // File name, original + quality
-        String fileName = file.substring(0, file.length() - 4) + "-Q" + quality + ".png";
+        String imageName = "output/" + fileName.substring(0, fileName.length() - 4) + "-Q" + quality + ".png";
 
-        File file2 = new File(fileName);
+        File file2 = new File(imageName);
         try {
             ImageIO.write(bufferedImage, "png", file2);
         } catch (IOException e) {
