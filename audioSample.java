@@ -20,6 +20,23 @@ public class audioSample {
         return samples;
     }
 
+    // getSampleRate
+    public int getSampleRate() {
+        try(AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
+            AudioFormat format = audioStream.getFormat();
+            int sampleRate = (int) format.getSampleRate();
+            return sampleRate;
+        }
+        catch(UnsupportedAudioFileException e){
+            System.out.println("Audio file is not supported");
+            return 0;
+        }
+        catch(IOException e){
+            System.out.println("Something went wrong");
+            return 0;
+        }
+    }
+
     public void setNumSamples(int numSamples) {
         this.numSamples = numSamples;
     }

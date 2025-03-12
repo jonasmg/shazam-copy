@@ -16,6 +16,8 @@ public class CalculateFourierTransform {
     private int[] samples;
     private int sampleSize;
 
+    private double maxMagnitude = 1.0;
+
     public void setSampleSize(int sampleSize) {
         this.sampleSize = sampleSize;
     }
@@ -26,6 +28,11 @@ public class CalculateFourierTransform {
 
     public void setFourierQuality(int fourierQuality) {
         this.fourierQuality = fourierQuality;
+    }
+
+    // Set sample rate
+    public void setSampleRate(int sampleRate) {
+        this.sampleRate = sampleRate;
     }
 
     public void setPixelHeight(int pixelHeight) {
@@ -48,6 +55,10 @@ public class CalculateFourierTransform {
         return pixelWidth;
     }
 
+    public double getMaxMagnitude() {
+        return maxMagnitude;
+    }
+
     public int[][] calculateDiscreteFourierTransform() {
         int statusPrints = 100;
         int[][] spectrogram = new int[pixelHeight][pixelWidth];
@@ -59,7 +70,7 @@ public class CalculateFourierTransform {
 
         lastSample = samples.length - frameShift;
 
-        double maxMagnitude = 1.0; // Keep track of the highest magnitude
+        maxMagnitude = 1.0; // Keep track of the highest magnitude
 
         for (int currentFrame = firstSample; currentFrame < lastSample; currentFrame += frameShift) {
             for (int i = binStart; i <= binEnd; i++) {
@@ -96,6 +107,48 @@ public class CalculateFourierTransform {
         return spectrogram;
     }
 
+    public int[][] calculateFastFourierTransform() {
+        int[][] spectrogram = new int[pixelHeight][pixelWidth];
+        int N = fourierSteps * fourierQuality;
+        
+        lastSample = samples.length - frameShift;
+        maxMagnitude = 1.0;
+        
+        for (int currentFrame = firstSample; currentFrame < lastSample; currentFrame += frameShift) {
+            Complex[] signal = new Complex[N];
+            for (int i = 0; i < N; i++) {
+                signal[i] = new Complex(currentFrame + i < samples.length ? samples[currentFrame + i] : 0, 0);
+            }
+            
+            Complex[] fftResult = computeFFT(signal);
+            
+            for (int i = 0; i < fftResult.length / 2; i++) { // Only use the first half
+                double magnitude = fftResult[i].magnitude();
+                if (magnitude > maxMagnitude) {
+                    maxMagnitude = magnitude;
+                }
+                
+                double frequency = i * sampleRate / (double) N;
+                int pixelX = (int) Math.round((currentFrame / (double) sampleSize) * pixelWidth);
+                int pixelY = pixelHeight - 1 - (int) Math.round((frequency / maxFreq) * pixelHeight);
+                
+                if (pixelX >= 0 && pixelX < pixelWidth && pixelY >= 0 && pixelY < pixelHeight) {
+                    spectrogram[pixelY][pixelX] += (int) magnitude;
+                }
+            }
+        }
+        
+        // // Normalize to 255
+        // for (int y = 0; y < pixelHeight; y++) {
+        //     for (int x = 0; x < pixelWidth; x++) {
+        //         spectrogram[y][x] = (int) (spectrogram[y][x] / maxMagnitude * 255);
+        //         spectrogram[y][x] = Math.min(255, spectrogram[y][x]);
+        //     }
+        // }
+        
+        return spectrogram;
+    }
+
     public static Complex computeDFT(int[] x, int k, int N, int currentSample) {
         double real = 0;
         double imag = 0;
@@ -110,6 +163,29 @@ public class CalculateFourierTransform {
 
         return new Complex(real, imag);
     }
+
+    public static Complex[] computeFFT(Complex[] x) {
+        int N = x.length;
+        if (N <= 1) return x;
+
+        Complex[] even = new Complex[N / 2];
+        Complex[] odd = new Complex[N / 2];
+        for (int i = 0; i < N / 2; i++) {
+            even[i] = x[i * 2];
+            odd[i] = x[i * 2 + 1];
+        }
+
+        Complex[] fftEven = computeFFT(even);
+        Complex[] fftOdd = computeFFT(odd);
+
+        Complex[] result = new Complex[N];
+        for (int k = 0; k < N / 2; k++) {
+            Complex t = Complex.exp(-2 * Math.PI * k / N).multiply(fftOdd[k]);
+            result[k] = fftEven[k].add(t);
+            result[k + N / 2] = fftEven[k].subtract(t);
+        }
+        return result;
+    }
 }
 
 class Complex {
@@ -123,5 +199,21 @@ class Complex {
 
     public double magnitude() {
         return Math.sqrt(re * re + im * im);
+    }
+
+    public Complex add(Complex other) {
+        return new Complex(this.re + other.re, this.im + other.im);
+    }
+
+    public Complex subtract(Complex other) {
+        return new Complex(this.re - other.re, this.im - other.im);
+    }
+
+    public Complex multiply(Complex other) {
+        return new Complex(this.re * other.re - this.im * other.im, this.re * other.im + this.im * other.re);
+    }
+
+    public static Complex exp(double theta) {
+        return new Complex(Math.cos(theta), Math.sin(theta));
     }
 }
