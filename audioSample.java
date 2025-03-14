@@ -69,17 +69,38 @@ public class audioSample {
     
             // Loop through the byte array and extract samples based on step size
             int extractedSamples = 0;
-            for (int i = 0; i < bytes.length / 4; i += stepSize) { // 4 bytes per frame (2 channels)
-                if (extractedSamples >= numSamples) break;
-    
-                // Extract the left channel (first 2 bytes of the frame)
-                int sample = (bytes[4 * i + 1] << 8) | (bytes[4 * i] & 0xFF); // Little-endian
-                //System.out.println("Sample " + extractedSamples + ": " + sample);
-                // Append samples in array:
-                samples[extractedSamples] = sample;
-    
-                extractedSamples++;
+
+            // Read bytes per frame from file
+            int bytesPerFrame = format.getFrameSize();
+            if (bytesPerFrame == 4) {
+                for (int i = 0; i < bytes.length / 4; i += stepSize) { // 4 bytes per frame (2 channels)
+                    if (extractedSamples >= numSamples) break;
+        
+                    // Extract the left channel (first 2 bytes of the frame)
+                    int sample = (bytes[4 * i + 1] << 8) | (bytes[4 * i] & 0xFF); // Little-endian
+                    //System.out.println("Sample " + extractedSamples + ": " + sample);
+                    // Append samples in array:
+                    samples[extractedSamples] = sample;
+        
+                    extractedSamples++;
+                }
+            } else if (bytesPerFrame == 2) {
+                for (int i = 0; i < bytes.length / 2; i += stepSize) { // 2 bytes per frame (1 channel)
+                    if (extractedSamples >= numSamples) break;
+        
+                    // Extract the left channel (first 2 bytes of the frame)
+                    int sample = (bytes[2 * i + 1] << 8) | (bytes[2 * i] & 0xFF); // Little-endian
+                    //System.out.println("Sample " + extractedSamples + ": " + sample);
+                    // Append samples in array:
+                    samples[extractedSamples] = sample;
+        
+                    extractedSamples++;
+                }
+            } else {
+                System.out.println("Unsupported audio format");
             }
+
+
             // Print how many samples was extracted
             System.out.println("Extracted " + samples.length + " samples from left track of " + filePath);
         }
