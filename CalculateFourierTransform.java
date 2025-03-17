@@ -2,8 +2,8 @@ public class CalculateFourierTransform {
     private int sampleRate = 44100;
     private int fourierQuality = 4;
     private int fourierSteps = 1024;
-    private double minFreq = 1.0;
-    private double maxFreq = 5000.0;
+    private double minFreq = 200;
+    private double maxFreq = 2000.0;
     private int pixelHeight = 800;
     private int pixelWidth = 1600;
 
