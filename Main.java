@@ -37,7 +37,7 @@ public class Main {
         int bins = 8;
 
         int fourierQuality = 4;
-        int[] fourierQualityList = {31};
+        int[] fourierQualityList = {28};
         int pixelHeight = 128*3;
         int pixelWidth = 1024*2;
         int secondLength = 8;
@@ -570,21 +570,32 @@ public class Main {
             }
         }
 
-        // Draw it to image in a new file
-        int[][] fftCluster = new int[pixelHeight][pixelWidth];
-        
-        // Draw points from cluster centers as 3x3 squares
+        // // Draw it to image in a new file
+        // int[][] fftCluster = new int[pixelHeight][pixelWidth];
+
+        // Draw points from cluster centers in 1/4 heigh quality and 1/2 width quality
+        int[][] fftClusterLQ = new int[pixelHeight/4][pixelWidth/2];
+
         for (int[] center : clusterCenters) {
-            for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                int x = center[0] + dx;
-                int y = center[1] + dy;
-                if (x >= 0 && x < pixelWidth && y >= 0 && y < pixelHeight) {
-                fftCluster[y][x] = 255;
-                }
-            }
+            int x = center[0] / 2;
+            int y = center[1] / 4;
+            if (x >= 0 && x < pixelWidth/2 && y >= 0 && y < pixelHeight/4) {
+                fftClusterLQ[y][x] = 255;
             }
         }
+        
+        // // Draw points from cluster centers as 3x3 squares
+        // for (int[] center : clusterCenters) {
+        //     for (int dx = -1; dx <= 1; dx++) {
+        //     for (int dy = -1; dy <= 1; dy++) {
+        //         int x = center[0] + dx;
+        //         int y = center[1] + dy;
+        //         if (x >= 0 && x < pixelWidth && y >= 0 && y < pixelHeight) {
+        //         fftCluster[y][x] = 255;
+        //         }
+        //     }
+        //     }
+        // }
 
         // Linear bins
         // if (bins != 0) {
