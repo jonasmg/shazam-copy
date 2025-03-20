@@ -27,18 +27,36 @@ public class Main {
                             // "uptown-funkcut2",
                             // "uptown-funkcut3",
                             // "uptown-funkcut1mobile",
-                            "smilecut1mobile",
-                            "smilecut2mobile",
+                            // "uptown-funkcut4mobilesinging",
+                            // "smilecut1mobile",
+                            // "smilecut2mobile",
+                            // "broken-heartcut1mobiletalking",
+                            // "broken-heartcut2mobiletalking",
+                            // "lover-lovercut1mobiletalking",
+                            // "lover-lovercut2mobiletalking",
                         };
 
-        String[] textFileNames = {
+        // String[] textFileNames = {
                             // "uptown-funkcut1",
                             // "uptown-funkcut2",
                             // "uptown-funkcut3",
                             // "uptown-funkcut1mobile",
-                            "smilecut1mobile",
-                            "smilecut2mobile",
-        };
+                            // "uptown-funkcut4mobilesinging",
+                            // "smilecut1mobile",
+                            // "smilecut2mobile",
+                            // "broken-heartcut1mobiletalking",
+                            // "broken-heartcut2mobiletalking",
+                            // "lover-lovercut1mobiletalking",
+                            // "lover-lovercut2mobiletalking",
+        // };
+
+        // Take every file in vectorListsInput
+        File folder = new File("vectorListsInput");
+        File[] listOfFiles = folder.listFiles();
+        String[] textFileNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            textFileNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 11);
+        }
 
         String[] filePaths = new String[fileNames.length];
 
@@ -50,7 +68,7 @@ public class Main {
         }
 
         for (int i = 0; i < textFileNames.length; i++) {
-            textFilePaths[i] = "vectorLists/" + textFileNames[i] + "Vectors.txt";
+            textFilePaths[i] = "vectorListsInput/" + textFileNames[i] + "Vectors.txt";
         }
 
         // Split up fft into bins nd only keep the highest value of each of those bins
@@ -931,46 +949,68 @@ public class Main {
                 // Set count to number of distinct of vectors 3
                 count = vectors3.size();
 
-                // // Sort vectors by offset
-                // vectors.sort((a, b) -> a[3] - b[3]);
-
-                // // Get first and last offset and calculate difference
-                // int firstOffset = vectors.get(0)[3];
-                // int lastOffset = vectors.get(vectors.size() - 1)[3];
-                // int offsetDifference = lastOffset - firstOffset;
-
-                // // Sort vectors3 by offset
-                // vectors3.sort((a, b) -> a[3] - b[3]);
-
-                // // Get first and last offset of vectors3
-                // int firstOffset3 = vectors3.get(0)[3];
-                // int lastOffset3 = vectors3.get(vectors3.size() - 1)[3];
-
-                // // List of vectors4
-                // ArrayList<int[]> vectors4 = new ArrayList<>();
-
-                // // Iterate over the offsets from vectors3 minus offsetDifference
-                // for (int i = firstOffset3; i <= lastOffset3 - offsetDifference; i += (int) offsetDifference/3) {
-                //     // Count how many vectors are in each step and insert into vectors4
-                //     int stepCount = 0;
-                //     // For loop over vectors3 from i to i + offsetDifference
-                //     for (int j = i; j <= i + offsetDifference; j++) {
-                //         for (int[] vector : vectors3) {
-                //             if (vector[2] == j) {
-                //                 stepCount++;
-                //             }
-                //         }
-                //         vectors4.add(new int[]{i, stepCount});
-                //     }
-                // }
-                
-
                 // Linear count
                 int linearCount = 0;
 
-                // // set linearCount to largest value in vectors4
-                // for (int[] vector : vectors4) {
-                //     linearCount = Math.max(linearCount, vector[1]);
+                // Sort vectors3 by offset
+                vectors3.sort((a, b) -> a[3] - b[3]);
+
+                // Sort vectors by offset
+                vectors.sort((a, b) -> a[3] - b[3]);
+
+                // Get smallest and largest offset of vectors
+                int smallestOffset = vectors.get(0)[3];
+                int largestOffset = vectors.get(vectors.size() - 1)[3];
+
+                // Get difference
+                int offsetDifference = largestOffset - smallestOffset;
+
+                // Divide by 2
+                int step = (int) offsetDifference / 2;
+
+                // array of vectors4
+                ArrayList<int[]> vectors4 = new ArrayList<>();
+
+                // Iterate over the vectors3 and count how many vectors are in each step with step size step
+                for (int i = 0; i <= vectors3.size() - step; i += step) {
+                    int stepCount = 0;
+                    for (int j = i; j <= i + step; j++) {
+                        for (int[] vector : vectors3) {
+                            if (vector[3] == j) {
+                                stepCount++;
+                            }
+                        }
+                    }
+                    vectors4.add(new int[]{i, stepCount});
+                }
+
+                // Take 4 largest steps and plus and add to linearCount
+                vectors4.sort((a, b) -> b[1] - a[1]);
+                for (int i = 0; i < 4; i++) {
+                    // If vectors4 is not empty
+                    if (vectors4.size() > i) {
+                        linearCount += vectors4.get(i)[1];
+                    }
+                }
+
+                // int avgOffsetVectors3 = 0;
+
+                // // Calculate avg offset
+                // for (int i = 0; i < vectors3.size() - 1; i++) {
+                //     avgOffsetVectors3 += vectors3.get(i)[3];
+                // }
+
+                // if (vectors3.size() > 1) {
+                //     avgOffsetVectors3 = avgOffsetVectors3 / (vectors3.size() - 1);
+                // }
+
+                // // From the avg offset of vectors3 and -step to +step from avg get amount of vectors3 in that range
+                // for (int i = avgOffsetVectors3 - step; i <= avgOffsetVectors3 + step; i++) {
+                //     for (int[] vector : vectors3) {
+                //         if (vector[3] == i) {
+                //             linearCount++;
+                //         }
+                //     }
                 // }
 
                 // Calculate percentage as int
@@ -1029,20 +1069,22 @@ public class Main {
         //     }
         // }
 
-        // // Sort results from linearCount and print
-        // results.sort((a, b) -> (int) b[4] - (int) a[4]);
+        // Sort results from linearCount
+        results.sort((a, b) -> (int) b[4] - (int) a[4]);
 
         // // Sort results from percentage
         // results.sort((a, b) -> (int) b[3] - (int) a[3]);
 
-        // Sort results from count
-        results.sort((a, b) -> (int) b[1] - (int) a[1]);
+        // // Sort results from count
+        // results.sort((a, b) -> (int) b[1] - (int) a[1]);
 
         // Print results
         for (Object[] result : results) {
             // If not the same file
             if (!result[0].equals(filePath.substring(0, filePath.length() - 12))) {
-                System.out.println(result[0] + " " + result[1] + " " + result[2]);
+                // System.out.println(result[0] + " - Found vec: " + result[1] + " Out of: " + result[2] + " " + result[3] + "% LinearCount: " + result[4]);
+                // Print results where each result gets 15 chars of length
+                System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
             }
         }
     }
