@@ -2,7 +2,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.io.FileNotFoundException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -12,35 +16,50 @@ public class Main {
     public static void main(String[] args) {
 
         String[] fileNames = {
-                            "piano-audio-test.wav",
-                            "jonasMusic.wav",
-                            // "sugarv2.wav",
-                            // "smilev2.wav",
-                            // "lover-loverv2.wav",
-                            // "broken-heartv2.wav",
-                            // "uptown-funkv2.wav",
-                            "uptown-funkcut1.wav",
-                            "uptown-funkcut2.wav",
-                            "uptown-funkcut3.wav",
+                            // "piano-audio-test",
+                            // "jonasMusic",
+                            // "sugarv2",
+                            // "smilev2",
+                            // "lover-loverv2",
+                            // "broken-heartv2",
+                            // "uptown-funkv2",
+                            // "uptown-funkcut1",
+                            // "uptown-funkcut2",
+                            // "uptown-funkcut3",
+                            // "uptown-funkcut1mobile",
+                            "smilecut1mobile",
+                            "smilecut2mobile",
                         };
 
-        // String filePath = "audio/" + fileName;
+        String[] textFileNames = {
+                            // "uptown-funkcut1",
+                            // "uptown-funkcut2",
+                            // "uptown-funkcut3",
+                            // "uptown-funkcut1mobile",
+                            "smilecut1mobile",
+                            "smilecut2mobile",
+        };
 
         String[] filePaths = new String[fileNames.length];
 
+        String[] textFilePaths = new String[textFileNames.length];
+
         // Append to each file name the audio/ path
         for (int i = 0; i < fileNames.length; i++) {
-            filePaths[i] = "audio/" + fileNames[i];
+            filePaths[i] = "audio/" + fileNames[i] + ".wav";
+        }
+
+        for (int i = 0; i < textFileNames.length; i++) {
+            textFilePaths[i] = "vectorLists/" + textFileNames[i] + "Vectors.txt";
         }
 
         // Split up fft into bins nd only keep the highest value of each of those bins
-        int bins = 8;
+        int bins = 10;
 
-        int fourierQuality = 4;
-        int[] fourierQualityList = {28};
-        int pixelHeight = 128*3;
+        int[] fourierQualityList = {24};
+        int pixelHeight = 128*2;
         int pixelWidth = 1024*2;
-        int secondLength = 8;
+        int secondLength = 6;
 
         // For each fourierQuality
         for (int i = 0; i < fourierQualityList.length; i++) {
@@ -58,10 +77,14 @@ public class Main {
             }
         }
 
+        // Compare vector files for each file in textFileNames
+        for (int i = 0; i < textFileNames.length; i++) {
+            // Print status
+            System.out.println("Processing file: " + textFileNames[i]);
+            // Compare vectors
+            compareVectors(textFilePaths[i]);
+        }
 
-        // int fourierQuality = 4;
-        // int pixelHeight = 1024;
-        // int pixelWidth = 1024*2;
 
         // audioSample a = new audioSample();
         // a.setFile(filePath);
@@ -330,9 +353,9 @@ public class Main {
             java.util.Arrays.sort(values);
 
             // Compute percentiles (ensure indices are within bounds)
-            int percentileIndex1 = Math.max(0, Math.min(values.length - 1, (int) (0.996 * values.length)));
-            int percentileIndex2 = Math.max(0, Math.min(values.length - 1, (int) (0.992 * values.length)));
-            int percentileIndex3 = Math.max(0, Math.min(values.length - 1, (int) (0.98 * values.length)));
+            int percentileIndex1 = Math.max(0, Math.min(values.length - 1, (int) (0.99 * values.length)));
+            int percentileIndex2 = Math.max(0, Math.min(values.length - 1, (int) (0.98 * values.length)));
+            int percentileIndex3 = Math.max(0, Math.min(values.length - 1, (int) (0.97 * values.length)));
 
             int percentile1 = values[percentileIndex1];
             int percentile2 = values[percentileIndex2];
@@ -352,200 +375,208 @@ public class Main {
             }
         }
 
+        // Maybe iterate over columns like before but only keep highest value in time frames of 4 columns
+
+        // // Linear bins
         // if (bins != 0) {
         //     int binSize = pixelHeight / bins;
-        //     // for each bin
+
+        //     // Iterate over columns
         //     for (int i = 0; i < pixelWidth; i++) {
-        //         for (int j = 0; j < pixelHeight; j += binSize) {
-        //         // For a bin save max and turn all pixels to 0
-        //         int maxBin = 0;
-        //         int maxBinIndex = j;
-        //         for (int k = 0; k < binSize; k++) {
-        //             if (j + k < pixelHeight) {
-        //             if (fft[j + k][i] > maxBin) {
-        //                 maxBin = fft[j + k][i];
-        //                 maxBinIndex = j + k;
+        //         int binIndex = 0; // Track bin number
+        //         int j = 0; // Start at the top of the column
+
+        //         while (j < pixelHeight) {
+        //             int maxBin = 0;
+        //             int maxBinIndex = j;
+
+        //             // Find max value within this bin
+        //             for (int k = 0; k < binSize; k++) {
+        //                 if (fft[j + k][i] > maxBin) {
+        //                     maxBin = fft[j + k][i];
+        //                     maxBinIndex = j + k;
+        //                 }
         //             }
-        //             fft[j + k][i] = 0;
+
+        //             // Set all pixels in the bin to 0 except the max
+        //             for (int k = 0; k < binSize; k++) {
+        //                 int currentIndex = j + k;
+        //                 if (currentIndex == maxBinIndex) continue; // Keep max pixel
+        //                 fft[currentIndex][i] = 0; // Zero out other pixels
         //             }
-        //         }
-        //         // Set max value to bin
-        //         fft[maxBinIndex][i] = maxBin;
+
+        //             // Move to the next bin
+        //             j += binSize;
+        //             binIndex++;
         //         }
         //     }
         // }
 
-        // Logorithmic bins
+        // Logarithmic bins
         if (bins != 0) {
             // Define the logarithmic scale factor
-            double logBase = 1.5; // Adjust this base for different growth rates
-            int previousBinEnd = 0; // Track where the last bin ended
-        
+            double logBase = 2; // Adjust this base for different growth rates
+
             // Iterate over columns
             for (int i = 0; i < pixelWidth; i++) {
                 int binIndex = 0; // Track bin number
                 int j = 0; // Start at the top of the column
-        
+
                 while (j < pixelHeight) {
-                    // Compute bin size logarithmically
-                    int binSize = (int) Math.ceil(pixelHeight / (bins * Math.pow(logBase, binIndex)));
-                    if (binSize < 1) binSize = 1; // Ensure minimum bin size of 1
-                    int maxBin = 0;
+                    int maxBin = Integer.MIN_VALUE; // Start with the smallest value
                     int maxBinIndex = j;
-        
+
+                    // Determine bin size (ensure at least 1 to prevent infinite loops)
+                    int binSize = Math.max(1, (int) Math.pow(logBase, binIndex));
+                    binSize = Math.min(binSize, pixelHeight - j); // Ensure within bounds
+
                     // Find max value within this bin
                     for (int k = 0; k < binSize; k++) {
-                        if (j + k < pixelHeight) {
-                            if (fft[j + k][i] > maxBin) {
-                                maxBin = fft[j + k][i];
-                                maxBinIndex = j + k;
-                            }
+                        if (fft[j + k][i] > maxBin) {
+                            maxBin = fft[j + k][i];
+                            maxBinIndex = j + k;
                         }
                     }
-        
-                    // Set all pixels in the bin to 0 except the max and its immediate neighbors
+
+                    // Set all pixels in the bin to 0 except the max
                     for (int k = 0; k < binSize; k++) {
                         int currentIndex = j + k;
-                        if (currentIndex < pixelHeight) {
-                            if (currentIndex == maxBinIndex || 
-                                currentIndex == maxBinIndex - 1 || 
-                                currentIndex == maxBinIndex + 1) {
-                                // Keep max pixel and its direct neighbors
-                                continue;
-                            }
+                        if (currentIndex != maxBinIndex) {
                             fft[currentIndex][i] = 0; // Zero out other pixels
                         }
                     }
-        
+
                     // Move to the next bin
                     j += binSize;
                     binIndex++;
                 }
             }
         }
+
+
         
-        // Clean up image to only get larger blobs
-        // Create copy of fft
-        int clusterSizeSmallest = 4;
-        int clusterSizeLargest = 8;
-        int[][] fftCopy2 = new int[pixelHeight][pixelWidth];
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                fftCopy2[j][i] = fft[j][i];
-            }
-        }
+        // // Clean up image to only get larger blobs
+        // // Create copy of fft
+        // int clusterSizeSmallest = 4;
+        // int clusterSizeLargest = 8;
+        // int[][] fftCopy2 = new int[pixelHeight][pixelWidth];
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         fftCopy2[j][i] = fft[j][i];
+        //     }
+        // }
 
-        // Iterate over fft
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                // If the pixel is not 0
-                if (fft[j][i] != 0) {
-                    // Check if the pixel is part of a cluster
-                    int clusterSize = 0;
-                    for (int k = -clusterSizeSmallest; k <= clusterSizeSmallest; k++) {
-                        for (int l = -clusterSizeSmallest; l <= clusterSizeSmallest; l++) {
-                            if (i + k >= 0 && i + k < pixelWidth && j + l >= 0 && j + l < pixelHeight) {
-                                if (fftCopy2[j + l][i + k] != 0) {
-                                    clusterSize++;
-                                }
-                            }
-                        }
-                    }
+        // // Iterate over fft
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         // If the pixel is not 0
+        //         if (fft[j][i] != 0) {
+        //             // Check if the pixel is part of a cluster
+        //             int clusterSize = 0;
+        //             for (int k = -clusterSizeSmallest; k <= clusterSizeSmallest; k++) {
+        //                 for (int l = -clusterSizeSmallest; l <= clusterSizeSmallest; l++) {
+        //                     if (i + k >= 0 && i + k < pixelWidth && j + l >= 0 && j + l < pixelHeight) {
+        //                         if (fftCopy2[j + l][i + k] != 0) {
+        //                             clusterSize++;
+        //                         }
+        //                     }
+        //                 }
+        //             }
 
-                    // If the cluster is too small, set the pixel to 0
-                    if (clusterSize < clusterSizeLargest) {
-                        fft[j][i] = 0;
-                    }
-                }
-            }
-        }
+        //             // If the cluster is too small, set the pixel to 0
+        //             if (clusterSize < clusterSizeLargest) {
+        //                 fft[j][i] = 0;
+        //             }
+        //         }
+        //     }
+        // }
 
-        // Only keep values above 200 in fft
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                if (fft[j][i] < 200) {
-                    fft[j][i] = 0;
-                } else {
-                    fft[j][i] = 1;
-                }
-            }
-        }
+        // // Only keep values above 200 in fft
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         if (fft[j][i] < 200) {
+        //             fft[j][i] = 0;
+        //         } else {
+        //             fft[j][i] = 1;
+        //         }
+        //     }
+        // }
 
-        // Make copy of fft
-        int[][] fftCopy3 = new int[pixelHeight][pixelWidth];
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                fftCopy3[j][i] = fft[j][i];
-            }
-        }
+        // // Make copy of fft
+        // int[][] fftCopy3 = new int[pixelHeight][pixelWidth];
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         fftCopy3[j][i] = fft[j][i];
+        //     }
+        // }
 
-        // Delete points with no more than 1 neighbor in a 5x5 square
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                if (fftCopy3[j][i] != 0) {
-                    int neighborCount = 0;
-                    for (int k = -2; k <= 2; k++) {
-                        for (int l = -2; l <= 2; l++) {
-                            if (k == 0 && l == 0) continue; // Skip the point itself
-                            if (i + k >= 0 && i + k < pixelWidth && j + l >= 0 && j + l < pixelHeight) {
-                                if (fftCopy3[j + l][i + k] != 0) {
-                                    neighborCount++;
-                                }
-                            }
-                        }
-                    }
-                    if (neighborCount <= 1) {
-                        fft[j][i] = 0;
-                    }
-                }
-            }
-        }
+        // // Delete points with no more than 1 neighbor in a 5x5 square
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         if (fftCopy3[j][i] != 0) {
+        //             int neighborCount = 0;
+        //             for (int k = -2; k <= 2; k++) {
+        //                 for (int l = -2; l <= 2; l++) {
+        //                     if (k == 0 && l == 0) continue; // Skip the point itself
+        //                     if (i + k >= 0 && i + k < pixelWidth && j + l >= 0 && j + l < pixelHeight) {
+        //                         if (fftCopy3[j + l][i + k] != 0) {
+        //                             neighborCount++;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //             if (neighborCount <= 1) {
+        //                 fft[j][i] = 0;
+        //             }
+        //         }
+        //     }
+        // }
 
-        // Extract nonzero data points into a list
-        ArrayList<int[]> dataPoints = new ArrayList<>();
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                if (fft[j][i] == 1) { // Only consider nonzero points
-                    dataPoints.add(new int[]{i, j}); // Store (x, y) coordinates
-                }
-            }
-        }
+        // // Extract nonzero data points into a list
+        // ArrayList<int[]> dataPoints = new ArrayList<>();
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         if (fft[j][i] == 1) { // Only consider nonzero points
+        //             dataPoints.add(new int[]{i, j}); // Store (x, y) coordinates
+        //         }
+        //     }
+        // }
 
-        // Clustering for every secondLength * 2 columns
-        int columns2 = secondLength * 2;
-        for (int i = 0; i < pixelWidth; i += columns2/2) {
-            // Extract data points for this column segment
-            ArrayList<int[]> dataPointsColumn = new ArrayList<>();
-            for (int j = 0; j < pixelHeight; j++) {
-                for (int offset = 0; offset < columns2 && i + offset < pixelWidth; offset++) {
-                    if (fft[j][i + offset] == 1) {
-                        dataPointsColumn.add(new int[]{i + offset, j});
-                    }
-                }
-            }
+        // // Clustering for every secondLength * 2 columns
+        // int columns2 = secondLength * 4;
+        // for (int i = 0; i < pixelWidth; i += columns2/2) {
+        //     // Extract data points for this column segment
+        //     ArrayList<int[]> dataPointsColumn = new ArrayList<>();
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         for (int offset = 0; offset < columns2 && i + offset < pixelWidth; offset++) {
+        //             if (fft[j][i + offset] == 1) {
+        //                 dataPointsColumn.add(new int[]{i + offset, j});
+        //             }
+        //         }
+        //     }
 
-            // If no points exist, skip this segment
-            if (dataPointsColumn.isEmpty()) continue;
+        //     // // If no points exist, skip this segment
+        //     // if (dataPointsColumn.isEmpty()) continue;
 
-            // Determine k dynamically based on number of points
-            int k = Math.max(1, dataPointsColumn.size() / 50); // Adjust divisor based on data density
+        //     // // Determine k dynamically based on number of points
+        //     // int k = Math.max(1, dataPointsColumn.size() / 400); // Adjust divisor based on data density
 
-            // Run K-Means clustering
-            ArrayList<int[]> clusterCentersColumn = kMeans(dataPointsColumn, k);
+        //     // // Run K-Means clustering
+        //     // ArrayList<int[]> clusterCentersColumn = kMeans(dataPointsColumn, k);
 
-            // Draw points from cluster centers as 3x3 squares
-            for (int[] center : clusterCentersColumn) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        int x = center[0] + dx;
-                        int y = center[1] + dy;
-                        if (x >= 0 && x < pixelWidth && y >= 0 && y < pixelHeight) {
-                            fft[y][x] = 255;
-                        }
-                    }
-                }
-            }
-        }
+        //     // // Draw points from cluster centers as 3x3 squares
+        //     // for (int[] center : clusterCentersColumn) {
+        //     //     for (int dx = -1; dx <= 1; dx++) {
+        //     //         for (int dy = -1; dy <= 1; dy++) {
+        //     //             int x = center[0] + dx;
+        //     //             int y = center[1] + dy;
+        //     //             if (x >= 0 && x < pixelWidth && y >= 0 && y < pixelHeight) {
+        //     //                 fft[y][x] = 255;
+        //     //             }
+        //     //         }
+        //     //     }
+        //     // }
+        // }
 
 
         // // Number of clusters (adjust based on data size)
@@ -560,29 +591,68 @@ public class Main {
         //     System.out.println("x: " + center[0] + ", y: " + center[1]);
         // }
 
-        // Create list of cluster centers called clusterCenters
-        ArrayList<int[]> clusterCenters = new ArrayList<>();
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                if (fft[j][i] > 0) {
-                    clusterCenters.add(new int[]{i, j});
-                }
-            }
-        }
+        // // Create list of cluster centers called clusterCenters
+        // ArrayList<int[]> clusterCenters = new ArrayList<>();
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         if (fft[j][i] > 0) {
+        //             clusterCenters.add(new int[]{i, j});
+        //         }
+        //     }
+        // }
 
         // // Draw it to image in a new file
         // int[][] fftCluster = new int[pixelHeight][pixelWidth];
 
-        // Draw points from cluster centers in 1/4 heigh quality and 1/2 width quality
-        int[][] fftClusterLQ = new int[pixelHeight/4][pixelWidth/2];
+        int heightDiv = 1;
+        int widthDiv = 1;
 
-        for (int[] center : clusterCenters) {
-            int x = center[0] / 2;
-            int y = center[1] / 4;
-            if (x >= 0 && x < pixelWidth/2 && y >= 0 && y < pixelHeight/4) {
-                fftClusterLQ[y][x] = 255;
+        int smallPixelHeight = pixelHeight/heightDiv;
+        int smallPixelWidth = pixelWidth/widthDiv;
+
+        // // Draw points from cluster centers in 1/heightDiv heigh quality and 1/widthDiv width quality
+        // int[][] fftCluster = new int[smallPixelHeight][smallPixelWidth];
+
+        // for (int[] center : clusterCenters) {
+        //     int x = center[0] / widthDiv;
+        //     int y = center[1] / heightDiv;
+        //     if (x >= 0 && x < smallPixelWidth && y >= 0 && y < smallPixelHeight) {
+        //         fftCluster[y][x] = 255;
+        //     }
+        // }
+
+        // Set target zone
+        int lengthToTarget = 10;
+        int targetHeight = 20;
+        int targetLength = 30;
+
+        // Create vector list
+        ArrayList<int[]> vectors = new ArrayList<>();
+
+        // Iterate through the width and height of fft
+        for (int i = 0; i < smallPixelWidth; i++) {
+            for (int j = 0; j < smallPixelHeight; j++) {
+                // If the pixel is nonzero
+                if (fft[j][i] != 0) {
+                    // Define target zone boundaries
+                    int startK = Math.max(i + lengthToTarget, 0);
+                    int endK = Math.min(i + lengthToTarget + targetLength, smallPixelWidth);
+                    int startL = Math.max(j - targetHeight, 0);
+                    int endL = Math.min(j + targetHeight, smallPixelHeight);
+
+                    // Search target zone
+                    for (int k = startK; k < endK; k++) {
+                        for (int l = startL; l < endL; l++) {
+                            if (fft[l][k] > 140) {
+                                // Store pixelheight1, pixelheight2, pixelwidth difference and pixelwidth position of pixel1
+                                vectors.add(new int[]{j, l, k - i, i});
+                            }
+                        }
+                    }
+                }
             }
         }
+
         
         // // Draw points from cluster centers as 3x3 squares
         // for (int[] center : clusterCenters) {
@@ -596,46 +666,6 @@ public class Main {
         //     }
         //     }
         // }
-
-        // Linear bins
-        // if (bins != 0) {
-        //     int binSize = pixelHeight / bins;
-        
-        //     // Iterate over columns
-        //     for (int i = 0; i < pixelWidth; i++) {
-        //         for (int j = 0; j < pixelHeight; j += binSize) {
-        //             // Find the max value within the bin
-        //             int maxBin = 0;
-        //             int maxBinIndex = j;
-        
-        //             for (int k = 0; k < binSize; k++) {
-        //                 if (j + k < pixelHeight) {
-        //                     if (fft[j + k][i] > maxBin) {
-        //                         maxBin = fft[j + k][i];
-        //                         maxBinIndex = j + k;
-        //                     }
-        //                 }
-        //             }
-        
-        //             // Set all pixels in the bin to 0 except the max and its immediate neighbors
-        //             for (int k = 0; k < binSize; k++) {
-        //                 int currentIndex = j + k;
-        //                 if (currentIndex < pixelHeight) {
-        //                     if (currentIndex == maxBinIndex || 
-        //                         currentIndex == maxBinIndex - 1 || 
-        //                         currentIndex == maxBinIndex + 1) {
-        //                         // Keep max pixel and its direct neighbors
-        //                         continue;
-        //                     }
-        //                     fft[currentIndex][i] = 0; // Zero out all other pixels in the bin
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        
-
-
 
         // // get perfentile of the fft and set it as the max value and turn the rest down to 0,25 percent of the max value
         // int[] values = new int[pixelHeight * pixelWidth];
@@ -684,14 +714,14 @@ public class Main {
         //     }
         // }
 
-        // Set all values to 0 or 255 in fft
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                if (fft[j][i] > 0) {
-                    fft[j][i] = 255;
-                }
-            }
-        }
+        // // Set all values to 0 or 255 in fft
+        // for (int i = 0; i < pixelWidth; i++) {
+        //     for (int j = 0; j < pixelHeight; j++) {
+        //         if (fft[j][i] > 0) {
+        //             fft[j][i] = 255;
+        //         }
+        //     }
+        // }
 
 
         // Print status
@@ -708,39 +738,65 @@ public class Main {
             }
         }
 
-        //create another image for the cluster centers
-        BufferedImage bufferedImageCluster = new BufferedImage(pixelWidth, pixelHeight, BufferedImage.TYPE_INT_RGB);
-        for (int i = 0; i < pixelWidth; i++) {
-            for (int j = 0; j < pixelHeight; j++) {
-                int value = fftCluster[j][i];
-                value = Math.min(value, 255);
-                int rgb = new Color(value, value, value).getRGB();
-                bufferedImageCluster.setRGB(i, j, rgb);
-            }
-        }
-
-
-        // File name, original + fourierQuality
-        String imageName = "output/" + fileName.substring(0, fileName.length() - 4) + "-Q" + fourierQuality + "fft" + bins + "B-F" + frameLength + "S" + shift + "col-" + columns + "Clean.png";
-
-        String clusterImageName = "output/" + fileName.substring(0, fileName.length() - 4) + "-Q" + fourierQuality + "fft" + bins + "B-F" + frameLength + "S" + shift + "col-" + columns + "Cluster.png";
-
+        
+        
+        // File name, original + info
+        String imageName = "output/" + fileName + "-Q" + fourierQuality + "fft" + bins + "B-F" + frameLength + "S" + shift + "col-" + columns + "Clean.png";
+        
+        
         File file2 = new File(imageName);
         try {
             ImageIO.write(bufferedImage, "png", file2);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        // Print status
+        System.out.println("Image created!");
+        
+        // //create another image for the cluster centers
+        // BufferedImage bufferedImageCluster = new BufferedImage(smallPixelWidth, smallPixelHeight, BufferedImage.TYPE_INT_RGB);
+        // for (int i = 0; i < smallPixelWidth; i++) {
+        //     for (int j = 0; j < smallPixelHeight; j++) {
+        //         int value = fftCluster[j][i];
+        //         value = Math.min(value, 255);
+        //         int rgb = new Color(value, value, value).getRGB();
+        //         bufferedImageCluster.setRGB(i, j, rgb);
+        //     }
+        // }
 
-        File file3 = new File(clusterImageName);
+        // String clusterImageName = "output/" + fileName + "-Q" + fourierQuality + "fft" + bins + "B-F" + frameLength + "S" + shift + "col-" + columns + "Cluster.png";
+        
+        // File file3 = new File(clusterImageName);
+        // try {
+        //     ImageIO.write(bufferedImageCluster, "png", file3);
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+        
+
+        // Creating File for vectors
+        String vectorFileName = "vectorLists/" + fileName + "Vectors.txt";
+        File file4 = new File(vectorFileName);
         try {
-            ImageIO.write(bufferedImageCluster, "png", file3);
+            file4.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Print status
-        System.out.println("Image and ClusterImage created!");
+        // Write to text file
+        try {
+            FileWriter writer = new FileWriter(file4);
+            for (int[] vector : vectors) {
+                writer.write(vector[0] + " " + vector[1] + " " + vector[2] + " " + vector[3] + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Print vector file info
+        System.out.println("Vector file created with " + vectors.size() + " vectors!");
     }
 
     public static ArrayList<int[]> kMeans(ArrayList<int[]> points, int k) {
@@ -805,5 +861,189 @@ public class Main {
 
     public static boolean equalPoints(int[] a, int[] b) {
         return a[0] == b[0] && a[1] == b[1];
+    }
+
+    public static void compareVectors(String filePath) {
+        // Read vectors from file
+        ArrayList<int[]> vectors = new ArrayList<>();
+        try {
+            File file = new File(filePath
+            );
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(" ");
+                vectors.add(new int[]{
+                                        Integer.parseInt(parts[0]),
+                                        Integer.parseInt(parts[1]),
+                                        Integer.parseInt(parts[2]),
+                                        Integer.parseInt(parts[3])
+                                    });
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Compare vectors to each file in vectorLists
+        File folder = new File("vectorLists");
+        File[] files = folder.listFiles();
+
+        // Results list with information for name and vectors should be both int int and string as tuple
+        ArrayList<Object[]> results = new ArrayList<>();
+
+        for (File file : files) {
+            if (file.isFile()) {
+                ArrayList<int[]> vectors2 = new ArrayList<>();
+                try {
+                    Scanner scanner = new Scanner(file);
+                    while (scanner.hasNextLine()) {
+                        String line = scanner.nextLine();
+                        String[] parts = line.split(" ");
+                        vectors2.add(new int[]{
+                                                Integer.parseInt(parts[0]),
+                                                Integer.parseInt(parts[1]), 
+                                                Integer.parseInt(parts[2]),
+                                                Integer.parseInt(parts[3])
+                                            });
+                    }
+                    scanner.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                // List of vectors3
+                ArrayList<int[]> vectors3 = new ArrayList<>();
+
+                // Compare vectors
+                int count = 0;
+                for (int[] vector : vectors) {
+                    for (int[] vector2 : vectors2) {
+                        if (vector[0] == vector2[0] && vector[1] == vector2[1] && vector[2] == vector2[2]) {
+                            vectors3.add(vector2);
+                        }
+                    }
+                }
+
+                // Remove duplicates from vectors3
+                vectors3 = new ArrayList<>(vectors3.stream().distinct().collect(Collectors.toList()));
+
+                // Set count to number of distinct of vectors 3
+                count = vectors3.size();
+
+                // // Sort vectors by offset
+                // vectors.sort((a, b) -> a[3] - b[3]);
+
+                // // Get first and last offset and calculate difference
+                // int firstOffset = vectors.get(0)[3];
+                // int lastOffset = vectors.get(vectors.size() - 1)[3];
+                // int offsetDifference = lastOffset - firstOffset;
+
+                // // Sort vectors3 by offset
+                // vectors3.sort((a, b) -> a[3] - b[3]);
+
+                // // Get first and last offset of vectors3
+                // int firstOffset3 = vectors3.get(0)[3];
+                // int lastOffset3 = vectors3.get(vectors3.size() - 1)[3];
+
+                // // List of vectors4
+                // ArrayList<int[]> vectors4 = new ArrayList<>();
+
+                // // Iterate over the offsets from vectors3 minus offsetDifference
+                // for (int i = firstOffset3; i <= lastOffset3 - offsetDifference; i += (int) offsetDifference/3) {
+                //     // Count how many vectors are in each step and insert into vectors4
+                //     int stepCount = 0;
+                //     // For loop over vectors3 from i to i + offsetDifference
+                //     for (int j = i; j <= i + offsetDifference; j++) {
+                //         for (int[] vector : vectors3) {
+                //             if (vector[2] == j) {
+                //                 stepCount++;
+                //             }
+                //         }
+                //         vectors4.add(new int[]{i, stepCount});
+                //     }
+                // }
+                
+
+                // Linear count
+                int linearCount = 0;
+
+                // // set linearCount to largest value in vectors4
+                // for (int[] vector : vectors4) {
+                //     linearCount = Math.max(linearCount, vector[1]);
+                // }
+
+                // Calculate percentage as int
+                int percentage = (int) (100.0 * count / vectors.size());
+
+                // File name as string:
+                String fileName = file.getName().substring(0, file.getName().length() - 11);
+
+                // Save information to results with name, count, size, percentage and linearCount
+                results.add(new Object[]{fileName, count, vectors2.size(), percentage, linearCount});
+
+                // // Sort vectors3 by offset
+                // vectors3.sort((a, b) -> a[2] - b[2]);
+
+                // // Get smallest and largest offset of vectors2
+                // int smallestOffset = vectors3.get(0)[2];
+                // int largestOffset = vectors3.get(vectors3.size() - 1)[2];
+                
+                // // Divide the difference by 10
+                // int difference = largestOffset - smallestOffset;
+                // int step = difference / 10;
+
+                // // List of vectors4
+                // ArrayList<int[]> vectors4 = new ArrayList<>();
+
+                // // Iterate over the offsets from vectors3 minus offsetDifference
+                // for (int i = smallestOffset; i <= largestOffset - step; i += step) {
+                //     // Count how many vectors are in each step and insert into vectors4
+                //     int stepCount = 0;
+                //     // For loop over vectors3 from i to i + offsetDifference
+                //     for (int j = i; j <= i + step; j++) {
+                //         for (int[] vector : vectors3) {
+                //             if (vector[2] == j) {
+                //                 stepCount++;
+                //             }
+                //         }
+                //     }
+                //     vectors4.add(new int[]{i, stepCount});
+                // }
+
+                // // Print file info
+                // System.out.println("File: " + fileName);
+
+                // // print results
+                // for (int[] vector : vectors4) {
+                //     System.out.println("Step: " + vector[0] + " Amount: " + vector[1]);
+                // }
+            }
+        }
+
+        // // Remove result of same file name
+        // for (int i = 0; i < results.size(); i++) {
+        //     if (results.get(i)[2] == Integer.parseInt(filePath.substring(0, filePath.length() - 12))) {
+        //         results.remove(i);
+        //         break;
+        //     }
+        // }
+
+        // // Sort results from linearCount and print
+        // results.sort((a, b) -> (int) b[4] - (int) a[4]);
+
+        // // Sort results from percentage
+        // results.sort((a, b) -> (int) b[3] - (int) a[3]);
+
+        // Sort results from count
+        results.sort((a, b) -> (int) b[1] - (int) a[1]);
+
+        // Print results
+        for (Object[] result : results) {
+            // If not the same file
+            if (!result[0].equals(filePath.substring(0, filePath.length() - 12))) {
+                System.out.println(result[0] + " " + result[1] + " " + result[2]);
+            }
+        }
     }
 }
