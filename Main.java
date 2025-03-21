@@ -66,9 +66,9 @@ public class Main {
             snippetNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
         }
 
-        // set them to empty
-        fileNames = new String[0];
-        snippetNames = new String[0];
+        // // set them to empty
+        // fileNames = new String[0];
+        // snippetNames = new String[0];
 
         // Take every file in vectorListsInput
         folder = new File("vectorListsInput");
@@ -689,7 +689,7 @@ public class Main {
         // }
 
         // Set target zone
-        int lengthToTarget = 10;
+        int lengthToTarget = 2;
         int targetHeight = 20;
         int targetLength = 30;
 
