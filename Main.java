@@ -15,7 +15,7 @@ import java.awt.Color;
 public class Main {
     public static void main(String[] args) {
 
-        String[] fileNames = {
+        // String[] fileNames = {
                             // "piano-audio-test",
                             // "jonasMusic",
                             // "sugarv2",
@@ -34,7 +34,7 @@ public class Main {
                             // "broken-heartcut2mobiletalking",
                             // "lover-lovercut1mobiletalking",
                             // "lover-lovercut2mobiletalking",
-                        };
+                        // };
 
         // String[] textFileNames = {
                             // "uptown-funkcut1",
@@ -50,9 +50,29 @@ public class Main {
                             // "lover-lovercut2mobiletalking",
         // };
 
-        // Take every file in vectorListsInput
-        File folder = new File("vectorListsInput");
+        // List for song database
+        File folder = new File("songList");
         File[] listOfFiles = folder.listFiles();
+        String[] fileNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            fileNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
+        }
+
+        // List for snippet database
+        folder = new File("snippetList");
+        listOfFiles = folder.listFiles();
+        String[] snippetNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            snippetNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
+        }
+
+        // set them to empty
+        fileNames = new String[0];
+        snippetNames = new String[0];
+
+        // Take every file in vectorListsInput
+        folder = new File("vectorListsInput");
+        listOfFiles = folder.listFiles();
         String[] textFileNames = new String[listOfFiles.length];
         for (int i = 0; i < listOfFiles.length; i++) {
             textFileNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 11);
@@ -60,11 +80,18 @@ public class Main {
 
         String[] filePaths = new String[fileNames.length];
 
+        String[] snippetFilePaths = new String[snippetNames.length];
+
         String[] textFilePaths = new String[textFileNames.length];
 
         // Append to each file name the audio/ path
         for (int i = 0; i < fileNames.length; i++) {
-            filePaths[i] = "audio/" + fileNames[i] + ".wav";
+            filePaths[i] = "songList/" + fileNames[i] + ".wav";
+        }
+
+        // Append to each file name the snippetList/ path
+        for (int i = 0; i < snippetNames.length; i++) {
+            snippetFilePaths[i] = "snippetList/" + snippetNames[i] + ".wav";
         }
 
         for (int i = 0; i < textFileNames.length; i++) {
@@ -72,13 +99,14 @@ public class Main {
         }
 
         // Split up fft into bins nd only keep the highest value of each of those bins
-        int bins = 10;
+        int bins = 6;
 
         int[] fourierQualityList = {24};
-        int pixelHeight = 128*2;
+        int pixelHeight = 128*5;
         int pixelWidth = 1024*2;
         int secondLength = 6;
 
+        // Create database
         // For each fourierQuality
         for (int i = 0; i < fourierQualityList.length; i++) {
             // for each file name
@@ -90,8 +118,31 @@ public class Main {
                 a.setFile(filePaths[ii]);
                 double audioLength = a.getLength();
                 pixelWidth = (int) (audioLength * secondLength);
+
+                // Output folder for vectorlist as vectorLists
+                String outputFolder = "vectorLists/";
     
-                processFile(filePaths[ii], fileNames[ii], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength);
+                processFile(filePaths[ii], fileNames[ii], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength, outputFolder);
+            }
+        }
+
+        // Create input database
+        // For each fourierQuality
+        for (int i = 0; i < fourierQualityList.length; i++) {
+            // for each file name
+            for (int ii = 0; ii < snippetNames.length; ii++) {
+                // Print status
+                System.out.println("Processing file: " + snippetNames[ii] + " Quality: " + fourierQualityList[i]);
+                // Get file length in seconds and set the pixelWidth to 20 times the length
+                audioSample a = new audioSample();
+                a.setFile(snippetFilePaths[ii]);
+                double audioLength = a.getLength();
+                pixelWidth = (int) (audioLength * secondLength);
+
+                // Output folder for vectorlist as vectorLists
+                String outputFolder = "vectorListsInput/";
+    
+                processFile(snippetFilePaths[ii], snippetNames[ii], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength, outputFolder);
             }
         }
 
@@ -261,7 +312,7 @@ public class Main {
     }
 
     // helper functiong process File
-    public static void processFile(String filePath, String fileName, int bins, int fourierQuality, int pixelHeight, int pixelWidth, int secondLength) {
+    public static void processFile(String filePath, String fileName, int bins, int fourierQuality, int pixelHeight, int pixelWidth, int secondLength, String outputFolder) {
         audioSample a = new audioSample();
         a.setFile(filePath);
         int numSamples = a.getMaxSamples();
@@ -397,19 +448,18 @@ public class Main {
 
         // // Linear bins
         // if (bins != 0) {
-        //     int binSize = pixelHeight / bins;
+        //     int binSize = Math.max(1, pixelHeight / bins); // Ensure at least 1 pixel per bin
 
         //     // Iterate over columns
         //     for (int i = 0; i < pixelWidth; i++) {
-        //         int binIndex = 0; // Track bin number
         //         int j = 0; // Start at the top of the column
 
         //         while (j < pixelHeight) {
-        //             int maxBin = 0;
+        //             int maxBin = Integer.MIN_VALUE; // Start with the smallest value
         //             int maxBinIndex = j;
 
         //             // Find max value within this bin
-        //             for (int k = 0; k < binSize; k++) {
+        //             for (int k = 0; k < binSize && (j + k) < pixelHeight; k++) {
         //                 if (fft[j + k][i] > maxBin) {
         //                     maxBin = fft[j + k][i];
         //                     maxBinIndex = j + k;
@@ -417,18 +467,19 @@ public class Main {
         //             }
 
         //             // Set all pixels in the bin to 0 except the max
-        //             for (int k = 0; k < binSize; k++) {
+        //             for (int k = 0; k < binSize && (j + k) < pixelHeight; k++) {
         //                 int currentIndex = j + k;
-        //                 if (currentIndex == maxBinIndex) continue; // Keep max pixel
-        //                 fft[currentIndex][i] = 0; // Zero out other pixels
+        //                 if (currentIndex != maxBinIndex) {
+        //                     fft[currentIndex][i] = 0; // Zero out other pixels
+        //                 }
         //             }
 
         //             // Move to the next bin
         //             j += binSize;
-        //             binIndex++;
         //         }
         //     }
         // }
+
 
         // Logarithmic bins
         if (bins != 0) {
@@ -470,8 +521,6 @@ public class Main {
                 }
             }
         }
-
-
         
         // // Clean up image to only get larger blobs
         // // Create copy of fft
@@ -794,7 +843,7 @@ public class Main {
         
 
         // Creating File for vectors
-        String vectorFileName = "vectorLists/" + fileName + "Vectors.txt";
+        String vectorFileName = outputFolder + fileName + "Vectors.txt";
         File file4 = new File(vectorFileName);
         try {
             file4.createNewFile();
@@ -1061,14 +1110,6 @@ public class Main {
             }
         }
 
-        // // Remove result of same file name
-        // for (int i = 0; i < results.size(); i++) {
-        //     if (results.get(i)[2] == Integer.parseInt(filePath.substring(0, filePath.length() - 12))) {
-        //         results.remove(i);
-        //         break;
-        //     }
-        // }
-
         // Sort results from linearCount
         results.sort((a, b) -> (int) b[4] - (int) a[4]);
 
@@ -1078,13 +1119,37 @@ public class Main {
         // // Sort results from count
         // results.sort((a, b) -> (int) b[1] - (int) a[1]);
 
-        // Print results
+        // Give percentage of how sure it is that the file is the  by first making list
+        ArrayList<Object[]> results2 = new ArrayList<>();
+
+        // Add all linearCount together
+        int linearCountTotal = 0;
         for (Object[] result : results) {
+            linearCountTotal += (int) result[4];
+        }
+
+        // Calculate percentage of linearCount for each file and add it as result[5]
+        for (Object[] result : results) {
+            int linearCount = (int) result[4];
+            int percentage = (int) (100.0 * linearCount / linearCountTotal);
+            results2.add(new Object[]{result[0], result[1], result[2], result[3], result[4], percentage});
+        }
+
+
+
+        // Print results
+        for (Object[] result : results2) {
             // If not the same file
             if (!result[0].equals(filePath.substring(0, filePath.length() - 12))) {
                 // System.out.println(result[0] + " - Found vec: " + result[1] + " Out of: " + result[2] + " " + result[3] + "% LinearCount: " + result[4]);
-                // Print results where each result gets 15 chars of length
-                System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
+                
+                // // Print results where each result gets 15 chars of length
+                // System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
+
+                // print file name and percentage of how sure they are with the name always being 25 chars and percent is over 4
+                if ((int) result[5] > 6) {
+                    System.out.printf("%-22s %s%%\n", result[0], result[5]);
+                }
             }
         }
     }
