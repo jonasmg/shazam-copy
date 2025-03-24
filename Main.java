@@ -30,9 +30,9 @@ public class Main {
             snippetNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
         }
 
-        // set them to empty
-        fileNames = new String[0];
-        snippetNames = new String[0];
+        // // set them to empty
+        // fileNames = new String[0];
+        // snippetNames = new String[0];
 
         String[] filePaths = new String[fileNames.length];
 
@@ -115,12 +115,28 @@ public class Main {
             textFilePaths[i] = "vectorListsInput/" + textFileNames[i] + "Vectors.txt";
         }
 
+        // Empty obj list for results
+        ArrayList<Object[]> results = new ArrayList<>();
+
         // Compare vector files for each file in textFileNames
         for (int i = 0; i < textFileNames.length; i++) {
             // Print status
             System.out.println("Processing file: " + textFileNames[i]);
             // Compare vectors
-            compareVectors(textFilePaths[i]);
+            results = compareVectors(textFilePaths[i]);
+
+            // Print results
+            for (Object[] result : results) {
+                // System.out.println(result[0] + " - Found vec: " + result[1] + " Out of: " + result[2] + " " + result[3] + "% LinearCount: " + result[4]);
+                
+                // // Print results where each result gets 15 chars of length
+                // System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
+
+                // print file name and percentage of how sure they are with the name always being 25 chars and percent is over 4
+                if ((int) result[5] > 6) {
+                    System.out.printf("%-22s %s%%\n", result[0], result[5]);
+                }
+            }
         }
     }
 
@@ -387,7 +403,7 @@ public class Main {
         return a[0] == b[0] && a[1] == b[1];
     }
 
-    public static void compareVectors(String filePath) {
+    public static ArrayList<Object[]> compareVectors(String filePath) {
         // Read vectors from file
         ArrayList<int[]> vectors = new ArrayList<>();
         try {
@@ -471,8 +487,9 @@ public class Main {
                 // Get difference
                 int offsetDifference = largestOffset - smallestOffset;
 
-                // Divide by 2
-                int step = (int) offsetDifference / 2;
+                // Divide by dividesize
+                int dividesize = 4;
+                int step = (int) offsetDifference / dividesize;
 
                 // array of vectors4
                 ArrayList<int[]> vectors4 = new ArrayList<>();
@@ -492,7 +509,7 @@ public class Main {
 
                 // Take 4 largest steps and plus and add to linearCount
                 vectors4.sort((a, b) -> b[1] - a[1]);
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < dividesize*2; i++) {
                     // If vectors4 is not empty
                     if (vectors4.size() > i) {
                         linearCount += vectors4.get(i)[1];
@@ -536,21 +553,23 @@ public class Main {
             results2.add(new Object[]{result[0], result[1], result[2], result[3], result[4], percentage});
         }
 
-        // Print results
-        for (Object[] result : results2) {
-            // If not the same file
-            if (!result[0].equals(filePath.substring(0, filePath.length() - 12))) {
-                // System.out.println(result[0] + " - Found vec: " + result[1] + " Out of: " + result[2] + " " + result[3] + "% LinearCount: " + result[4]);
-                
-                // Print results where each result gets 15 chars of length
-                System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
+        return results2;
 
-                // // print file name and percentage of how sure they are with the name always being 25 chars and percent is over 4
-                // if ((int) result[5] > 6) {
-                //     System.out.printf("%-22s %s%%\n", result[0], result[5]);
-                // }
-            }
-        }
+        // // Print results
+        // for (Object[] result : results2) {
+        //     // If not the same file
+        //     if (!result[0].equals(filePath.substring(0, filePath.length() - 12))) {
+        //         // System.out.println(result[0] + " - Found vec: " + result[1] + " Out of: " + result[2] + " " + result[3] + "% LinearCount: " + result[4]);
+                
+        //         // Print results where each result gets 15 chars of length
+        //         System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
+
+        //         // // print file name and percentage of how sure they are with the name always being 25 chars and percent is over 4
+        //         // if ((int) result[5] > 6) {
+        //         //     System.out.printf("%-22s %s%%\n", result[0], result[5]);
+        //         // }
+        //     }
+        // }
     }
 
     public static void linear_bins(int[][] fft, int bins, int pixelHeight, int pixelWidth) {
