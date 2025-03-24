@@ -1,10 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.util.Arrays;
+// import java.util.Arrays;
 import javax.swing.*;
-
-
 
 public class userInterface extends JFrame implements ActionListener, KeyListener, MouseWheelListener {
 
@@ -19,7 +17,7 @@ public class userInterface extends JFrame implements ActionListener, KeyListener
     private boolean ctrlPressed = false;
     private int fourierQuality = 1;
     
-    private static JLabel label;
+    // private static JLabel label;
     private static JTextField qualityTextField;
     private static JTextField qualityText;
     private static JTextField heightTextField;
@@ -36,7 +34,7 @@ public class userInterface extends JFrame implements ActionListener, KeyListener
     private JButton button;
 
     public userInterface(int[] samples, String file) {
-        double[] doubleSamples = Arrays.stream(samples).asDoubleStream().toArray();
+        // double[] doubleSamples = Arrays.stream(samples).asDoubleStream().toArray();
 
         // Add key listener
         addKeyListener(this); // add key listener to the frame

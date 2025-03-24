@@ -127,7 +127,7 @@ public class CalculateFourierTransform {
     public int[][] calculateFastFourierTransform() {
         int[][] spectrogram = new int[pixelHeight][pixelWidth];
         
-        int frameLengthSamples = (int) (frameLength * sampleRate / 1000.0);
+        // int frameLengthSamples = (int) (frameLength * sampleRate / 1000.0);
         int frameShiftSamples = (int) (frameShift * sampleRate / 1000.0);
         
         // Calculate N based on fourierQuality and fourierSteps

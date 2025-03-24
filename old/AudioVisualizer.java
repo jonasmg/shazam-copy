@@ -6,14 +6,14 @@ import java.awt.*;
 
 public class AudioVisualizer extends JPanel {
     private long[] samples; // Array to store samples
-    private int sampleRate;
+    // private int sampleRate;
 
     public AudioVisualizer(String filePath) throws UnsupportedAudioFileException, IOException {
         // Load audio file and extract samples
         File file = new File(filePath);
         try (AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
             AudioFormat format = audioStream.getFormat();
-            sampleRate = (int) format.getSampleRate(); // Get the sample rate
+            // sampleRate = (int) format.getSampleRate(); // Get the sample rate
 
             if (format.getSampleSizeInBits() != 16 || format.getChannels() != 2 || !format.isBigEndian()) {
                 System.err.println("Unexpected audio format. Adjust the code accordingly.");
