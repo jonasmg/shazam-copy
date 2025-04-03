@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.io.FileNotFoundException;
@@ -120,7 +119,7 @@ public class Main {
             // Print status
             System.out.println("Processing file: " + textFileNames[i]);
             // Compare vectors
-            compareVectors(textFilePaths[i]);
+            compareVectorsv2(textFilePaths[i]);
         }
     }
 
@@ -236,8 +235,8 @@ public class Main {
         double logBase = 2; // Adjust this base for different growth rates
 
         // Run logorithmic bins on fft
-        logorithmic_bins(fft, bins, pixelHeight, pixelWidth, logBase);
-        // linear_bins(fft, bins, pixelHeight, pixelWidth);
+        BinCalculations.logorithmic_bins(fft, bins, pixelHeight, pixelWidth, logBase);
+        // BinCalculations.linear_bins(fft, bins, pixelHeight, pixelWidth);
 
         // Set target zone
         int targetHeight = targetZone[0];
@@ -321,66 +320,6 @@ public class Main {
 
         // Print vector file info
         System.out.println("Vector file created with " + vectors.size() + " vectors!");
-    }
-
-    public static ArrayList<int[]> kMeans(ArrayList<int[]> points, int k) {
-        if (points.isEmpty()) return new ArrayList<>();
-        Random rand = new Random();
-
-        // Initialize cluster centers randomly
-        ArrayList<int[]> centers = new ArrayList<>();
-        for (int i = 0; i < k; i++) {
-            centers.add(points.get(rand.nextInt(points.size())));
-        }
-
-        boolean changed = true;
-        while (changed) {
-            // Assign each point to the nearest center
-            ArrayList<ArrayList<int[]>> clusters = new ArrayList<>();
-            for (int i = 0; i < k; i++) clusters.add(new ArrayList<>());
-
-            for (int[] point : points) {
-                int closestIndex = 0;
-                double closestDist = Double.MAX_VALUE;
-
-                for (int i = 0; i < k; i++) {
-                    double dist = distance(point, centers.get(i));
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        closestIndex = i;
-                    }
-                }
-
-                clusters.get(closestIndex).add(point);
-            }
-
-            // Update centers to the mean of each cluster
-            changed = false;
-            for (int i = 0; i < k; i++) {
-                if (!clusters.get(i).isEmpty()) {
-                    int[] newCenter = meanPoint(clusters.get(i));
-                    if (!equalPoints(newCenter, centers.get(i))) {
-                        centers.set(i, newCenter);
-                        changed = true;
-                    }
-                }
-            }
-        }
-
-        return centers;
-    }
-
-    public static double distance(int[] a, int[] b) {
-        return Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
-    }
-
-    public static int[] meanPoint(ArrayList<int[]> cluster) {
-        int sumX = 0, sumY = 0;
-        for (int[] point : cluster) {
-            sumX += point[0];
-            sumY += point[1];
-        }
-        return new int[]{sumX / cluster.size(), sumY / cluster.size()};
     }
 
     public static boolean equalPoints(int[] a, int[] b) {
@@ -553,80 +492,142 @@ public class Main {
         }
     }
 
-    public static void linear_bins(int[][] fft, int bins, int pixelHeight, int pixelWidth) {
-        // Linear bins
-        if (bins != 0) {
-            int binSize = Math.max(1, pixelHeight / bins); // Ensure at least 1 pixel per bin
+    public static void compareVectorsv2(String filePath) {
+        // Read vectors from file
+        ArrayList<int[]> inputVectors = new ArrayList<>();
 
-            // Iterate over columns
-            for (int i = 0; i < pixelWidth; i++) {
-                int j = 0; // Start at the top of the column
+        try {
+            File file = new File(filePath);
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(" ");
+                inputVectors.add(new int[]{
+                    Integer.parseInt(parts[0]),
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3])
+                });
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
-                while (j < pixelHeight) {
-                    int maxBin = Integer.MIN_VALUE; // Start with the smallest value
-                    int maxBinIndex = j;
+        // Create list of all vectors from database
+        File folder = new File("vectorLists");
+        File[] files = folder.listFiles();
 
-                    // Find max value within this bin
-                    for (int k = 0; k < binSize && (j + k) < pixelHeight; k++) {
-                        if (fft[j + k][i] > maxBin) {
-                            maxBin = fft[j + k][i];
-                            maxBinIndex = j + k;
-                        }
+        // Results list with information for name and vectors should be both int int and string as tuple
+        ArrayList<Object[]> databaseVectors = new ArrayList<>();
+
+        for (File file : files) {
+            if (file.isFile()) {
+                try {
+                    Scanner scanner = new Scanner(file);
+                    while (scanner.hasNextLine()) {
+                        String line = scanner.nextLine();
+                        String[] parts = line.split(" ");
+                        databaseVectors.add(new Object[]{
+                            Integer.parseInt(parts[0]),
+                            Integer.parseInt(parts[1]), 
+                            Integer.parseInt(parts[2]),
+                            Integer.parseInt(parts[3]),
+                            file.getName().substring(0, file.getName().length() - 11)
+                        });
                     }
-
-                    // Set all pixels in the bin to 0 except the max
-                    for (int k = 0; k < binSize && (j + k) < pixelHeight; k++) {
-                        int currentIndex = j + k;
-                        if (currentIndex != maxBinIndex) {
-                            fft[currentIndex][i] = 0; // Zero out other pixels
-                        }
-                    }
-
-                    // Move to the next bin
-                    j += binSize;
+                    scanner.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
         }
-    }
 
-    public static void logorithmic_bins(int[][] fft, int bins, int pixelHeight, int pixelWidth, double logBase) {
-        // Logarithmic bins
-        if (bins != 0) {
+        // New object list for vectors found
+        ArrayList<Object[]> databaseVectorsFound = new ArrayList<>();
 
-            // Iterate over columns
-            for (int i = 0; i < pixelWidth; i++) {
-                int binIndex = 0; // Track bin number
-                int j = 0; // Start at the top of the column
+        // List of distinct songs
+        ArrayList<String> distinctSongs = new ArrayList<>();
 
-                while (j < pixelHeight) {
-                    int maxBin = Integer.MIN_VALUE; // Start with the smallest value
-                    int maxBinIndex = j;
+        // Sort databaseVectors [0]
+        databaseVectors.sort((a, b) -> (int) a[0] - (int) b[0]);
 
-                    // Determine bin size (ensure at least 1 to prevent infinite loops)
-                    int binSize = Math.max(1, (int) Math.pow(logBase, binIndex));
-                    binSize = Math.min(binSize, pixelHeight - j); // Ensure within bounds
+        // Compare vectors to each file in vectors
+        for (int[] vector : inputVectors) {
+            // // For each vector in databaseVectors
+            // for (Object[] vector2 : databaseVectors) {
+            //     if (vector[0] == (int) vector2[0] && vector[1] == (int) vector2[1] && vector[2] == (int) vector2[2]) {
+            //         databaseVectorsFound.add(vector2);
+            //         if (!distinctSongs.contains( (String) vector2[4])) {
+            //             distinctSongs.add( (String) vector2[4]);
+            //         }
+            //     }
+            // }
 
-                    // Find max value within this bin
-                    for (int k = 0; k < binSize; k++) {
-                        if (fft[j + k][i] > maxBin) {
-                            maxBin = fft[j + k][i];
-                            maxBinIndex = j + k;
-                        }
-                    }
-
-                    // Set all pixels in the bin to 0 except the max
-                    for (int k = 0; k < binSize; k++) {
-                        int currentIndex = j + k;
-                        if (currentIndex != maxBinIndex) {
-                            fft[currentIndex][i] = 0; // Zero out other pixels
-                        }
-                    }
-
-                    // Move to the next bin
-                    j += binSize;
-                    binIndex++;
+            // Binary search for the vector[0] placement in databaseVectors only checking [0]
+            int low = 0;
+            int high = databaseVectors.size() - 1;
+            int placement = -1;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                if ((int) databaseVectors.get(mid)[0] < vector[0]) {
+                    low = mid + 1;
+                } else if ((int) databaseVectors.get(mid)[0] > vector[0]) {
+                    high = mid - 1;
+                } else {
+                    placement = mid;
+                    break;
                 }
             }
+
+            // Find first instance of [0] from the placement
+            if (placement != -1) {
+                while (placement > 0 && (int) databaseVectors.get(placement - 1)[0] == vector[0]) {
+                    placement--;
+                }
+            }
+
+            // If placement is not -1, add to databaseVectorsFound
+            if (placement != -1) {
+                // While [0] matches keep adding vectors to databaseVectorsFound
+                while (placement < databaseVectors.size() && vector[0] == (int) databaseVectors.get(placement)[0]) {
+                    // Check if vector[1] and vector[2] match
+                    if (vector[1] == (int) databaseVectors.get(placement)[1] && vector[2] == (int) databaseVectors.get(placement)[2]) {
+                        // Add to databaseVectorsFound
+                        databaseVectorsFound.add(databaseVectors.get(placement));
+                        if (!distinctSongs.contains((String) databaseVectors.get(placement)[4])) {
+                            distinctSongs.add((String) databaseVectors.get(placement)[4]);
+                        }
+                    }
+                    placement++;
+                }
+            }
+        }
+
+        // Remove duplicates from vectors3
+        databaseVectorsFound = new ArrayList<>(databaseVectorsFound.stream().distinct().collect(Collectors.toList()));
+
+        // For each distinct song count how many vectors are in it
+        ArrayList<Object[]> results = new ArrayList<>();
+        for (String song : distinctSongs) {
+            // Count how many vectors are in the song
+            int count = 0;
+            for (Object[] dbVector : databaseVectorsFound) {
+                if (dbVector[4].equals(song)) {
+                    count++;
+                }
+            }
+            // Add to results
+            results.add(new Object[]{song, count});
+        }
+
+        // Sort results from count
+        results.sort((a, b) -> (int) b[1] - (int) a[1]);
+
+        // Print results
+        for (Object[] result : results) {
+            // Print results where each result gets 15 chars of length, so print song and count
+            System.out.printf("%-22s Found vec: %-8s\n", result[0], result[1]);
         }
     }
 }

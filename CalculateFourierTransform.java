@@ -213,7 +213,13 @@ public class CalculateFourierTransform {
         }
         
         return spectrogram;
-    }    
+    }
+
+    public int[][] calculateShortTimeFourierTransform() {
+        int[][] spectrogram = new int[pixelHeight][pixelWidth];
+
+        return spectrogram;
+    }
 
     public int[][] calculateFastFourierTransformOld() {
         int[][] spectrogram = new int[pixelHeight][pixelWidth];
