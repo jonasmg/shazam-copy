@@ -12,41 +12,11 @@ import java.awt.Color;
 
 public class Main {
     public static void main(String[] args) {
+        String[][] fileNames = new String[0][0]; // First is name of file, second is the path
+        String[][] snippetNames = new String[0][0];
 
-        // List for song database
-        File folder = new File("songList");
-        File[] listOfFiles = folder.listFiles();
-        String[] fileNames = new String[listOfFiles.length];
-        for (int i = 0; i < listOfFiles.length; i++) {
-            fileNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
-        }
-
-        // List for snippet database
-        folder = new File("snippetList");
-        listOfFiles = folder.listFiles();
-        String[] snippetNames = new String[listOfFiles.length];
-        for (int i = 0; i < listOfFiles.length; i++) {
-            snippetNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
-        }
-
-        // // set them to empty
-        // fileNames = new String[0];
-        // snippetNames = new String[0];
-
-        String[] filePaths = new String[fileNames.length];
-
-        String[] snippetFilePaths = new String[snippetNames.length];
-
-
-        // Append to each file name the audio/ path
-        for (int i = 0; i < fileNames.length; i++) {
-            filePaths[i] = "songList/" + fileNames[i] + ".wav";
-        }
-
-        // Append to each file name the snippetList/ path
-        for (int i = 0; i < snippetNames.length; i++) {
-            snippetFilePaths[i] = "snippetList/" + snippetNames[i] + ".wav";
-        }
+        // fileNames = getFiles("songList");
+        // snippetNames = getFiles("snippetList");
 
         int bins = 6;
         int[] fourierQualityList = {24};
@@ -66,17 +36,17 @@ public class Main {
             // for each file name
             for (int ii = 0; ii < fileNames.length; ii++) {
                 // Print status
-                System.out.println("Processing file: " + fileNames[ii] + " Quality: " + fourierQualityList[i]);
+                System.out.println("Processing file: " + fileNames[ii][0] + " Quality: " + fourierQualityList[i]);
                 // Get file length in seconds and set the pixelWidth to 20 times the length
                 audioSample a = new audioSample();
-                a.setFile(filePaths[ii]);
+                a.setFile(fileNames[ii][1]);
                 double audioLength = a.getLength();
                 pixelWidth = (int) (audioLength * secondLength);
 
                 // Output folder for vectorlist as vectorLists
                 String outputFolder = "vectorLists/";
     
-                processFile(filePaths[ii], fileNames[ii], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength, outputFolder, targetZone);
+                processFile(fileNames[ii][1], fileNames[ii][0], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength, outputFolder, targetZone);
             }
         }
 
@@ -86,43 +56,63 @@ public class Main {
             // for each file name
             for (int ii = 0; ii < snippetNames.length; ii++) {
                 // Print status
-                System.out.println("Processing file: " + snippetNames[ii] + " Quality: " + fourierQualityList[i]);
+                System.out.println("Processing file: " + snippetNames[ii][1] + " Quality: " + fourierQualityList[i]);
                 // Get file length in seconds and set the pixelWidth to 20 times the length
                 audioSample a = new audioSample();
-                a.setFile(snippetFilePaths[ii]);
+                a.setFile(snippetNames[ii][1]);
                 double audioLength = a.getLength();
                 pixelWidth = (int) (audioLength * secondLength);
 
                 // Output folder for vectorlist as vectorLists
                 String outputFolder = "vectorListsInput/";
     
-                processFile(snippetFilePaths[ii], snippetNames[ii], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength, outputFolder, targetZone);
+                processFile(snippetNames[ii][1], snippetNames[ii][0], bins, fourierQualityList[i], pixelHeight, pixelWidth, secondLength, outputFolder, targetZone);
             }
         }
 
         // Take every file in vectorListsInput
-        folder = new File("vectorListsInput");
-        listOfFiles = folder.listFiles();
-        String[] textFileNames = new String[listOfFiles.length];
-        for (int i = 0; i < listOfFiles.length; i++) {
-            textFileNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 11);
-        }
-        
-        String[] textFilePaths = new String[textFileNames.length];
-
-        for (int i = 0; i < textFileNames.length; i++) {
-            textFilePaths[i] = "vectorListsInput/" + textFileNames[i] + "Vectors.txt";
-        }
+        String[][] textFileNames = new String[0][0];
+        textFileNames = getFiles("vectorListsInput");
 
         // Empty obj list for results
         ArrayList<Object[]> results = new ArrayList<>();
 
+        // VectorDatabase list sorted from [0]
+        ArrayList<Object[]> databaseVectors = new ArrayList<>();
+        databaseVectors = getVectorDatabase("vectorLists");
+
         // Compare vector files for each file in textFileNames
         for (int i = 0; i < textFileNames.length; i++) {
             // Print status
-            System.out.println("Processing file: " + textFileNames[i]);
-            // Compare vectors
-            compareVectorsv2(textFilePaths[i]);
+            System.out.println("Processing " + textFileNames[i][0] + "...");
+            // Compare vectors and add to database with filename
+            Object comparisonResult = compareVectorsv2(textFileNames[i][1], databaseVectors);
+            // Pull out the filename and then count and then add to results with input filename
+            ArrayList<Object[]> comparisonResults = (ArrayList<Object[]>) comparisonResult;
+            results.add(new Object[]{textFileNames[i][0], comparisonResults});
+        }
+
+        // Print results
+        for (Object[] result : results) {
+            String fileName = (String) result[0];
+            // Print input filename
+            System.out.println("\nInput file: " + fileName);
+            // Print results where each result gets 15 chars of length, so print song and count
+            for (int i = 1; i < 6; i++) {
+                if (i < ((ArrayList<Object[]>) result[1]).size()) {
+                    Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
+                    String songName = (String) songResult[0];
+                    int count = (int) songResult[1];
+                    // Print song name and count
+                    System.out.printf("%-22s Found vectors: %d", songName, count);
+                    // If first 5 chars match print "success"
+                    if (fileName.substring(0, 5).equals(songName.substring(0, 5))) {
+                        System.out.println(" - Correct");
+                    } else {
+                        System.out.println();
+                    }
+                }
+            }
         }
     }
 
@@ -498,7 +488,7 @@ public class Main {
         // }
     }
 
-    public static void compareVectorsv2(String filePath) {
+    public static Object compareVectorsv2(String filePath, ArrayList<Object[]> databaseVectors) {
         // Read vectors from file
         ArrayList<int[]> inputVectors = new ArrayList<>();
 
@@ -520,56 +510,14 @@ public class Main {
             e.printStackTrace();
         }
 
-        // Create list of all vectors from database
-        File folder = new File("vectorLists");
-        File[] files = folder.listFiles();
-
-        // Results list with information for name and vectors should be both int int and string as tuple
-        ArrayList<Object[]> databaseVectors = new ArrayList<>();
-
-        for (File file : files) {
-            if (file.isFile()) {
-                try {
-                    Scanner scanner = new Scanner(file);
-                    while (scanner.hasNextLine()) {
-                        String line = scanner.nextLine();
-                        String[] parts = line.split(" ");
-                        databaseVectors.add(new Object[]{
-                            Integer.parseInt(parts[0]),
-                            Integer.parseInt(parts[1]), 
-                            Integer.parseInt(parts[2]),
-                            Integer.parseInt(parts[3]),
-                            file.getName().substring(0, file.getName().length() - 11)
-                        });
-                    }
-                    scanner.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
         // New object list for vectors found
         ArrayList<Object[]> databaseVectorsFound = new ArrayList<>();
 
         // List of distinct songs
         ArrayList<String> distinctSongs = new ArrayList<>();
 
-        // Sort databaseVectors [0]
-        databaseVectors.sort((a, b) -> (int) a[0] - (int) b[0]);
-
         // Compare vectors to each file in vectors
         for (int[] vector : inputVectors) {
-            // // For each vector in databaseVectors
-            // for (Object[] vector2 : databaseVectors) {
-            //     if (vector[0] == (int) vector2[0] && vector[1] == (int) vector2[1] && vector[2] == (int) vector2[2]) {
-            //         databaseVectorsFound.add(vector2);
-            //         if (!distinctSongs.contains( (String) vector2[4])) {
-            //             distinctSongs.add( (String) vector2[4]);
-            //         }
-            //     }
-            // }
-
             // Binary search for the vector[0] placement in databaseVectors only checking [0]
             int low = 0;
             int high = databaseVectors.size() - 1;
@@ -630,10 +578,74 @@ public class Main {
         // Sort results from count
         results.sort((a, b) -> (int) b[1] - (int) a[1]);
 
-        // Print results
-        for (Object[] result : results) {
-            // Print results where each result gets 15 chars of length, so print song and count
-            System.out.printf("%-22s Found vec: %-8s\n", result[0], result[1]);
+        // // Print results
+        // for (Object[] result : results) {
+        //     // Print results where each result gets 15 chars of length, so print song and count
+        //     System.out.printf("%-22s Found vec: %-8s\n", result[0], result[1]);
+        // }
+
+        // // Print top 5 results
+        // for (int i = 0; i < 5 && i < results.size(); i++) {
+        //     // Print results where each result gets 15 chars of length, so print song and count
+        //     System.out.printf("%-22s Found vec: %-8s\n", results.get(i)[0], results.get(i)[1]);
+        // }
+
+        return results;
+    }
+
+    public static ArrayList<Object[]> getVectorDatabase(String folderPath) {
+        // Create list of all vectors from database
+        File folder = new File(folderPath);
+        File[] files = folder.listFiles();
+
+        // Results list with information for name and vectors should be both int int and string as tuple
+        ArrayList<Object[]> databaseVectors = new ArrayList<>();
+
+        for (File file : files) {
+            if (file.isFile()) {
+                try {
+                    Scanner scanner = new Scanner(file);
+                    while (scanner.hasNextLine()) {
+                        String line = scanner.nextLine();
+                        String[] parts = line.split(" ");
+                        databaseVectors.add(new Object[]{
+                            Integer.parseInt(parts[0]),
+                            Integer.parseInt(parts[1]), 
+                            Integer.parseInt(parts[2]),
+                            Integer.parseInt(parts[3]),
+                            file.getName().substring(0, file.getName().length() - 11)
+                        });
+                    }
+                    scanner.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
+        // Sort databaseVectors [0]
+        databaseVectors.sort((a, b) -> (int) a[0] - (int) b[0]);
+
+        return databaseVectors;
+    }
+
+    public static String[][] getFiles(String folderPath) {
+        // Get all files in folder
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+        String[] fileNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            fileNames[i] = listOfFiles[i].getName().substring(0, listOfFiles[i].getName().length() - 4);
+        }
+        String[] filePaths = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            filePaths[i] = listOfFiles[i].getPath();
+        }
+        String[][] result = new String[listOfFiles.length][2];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            result[i][0] = fileNames[i];
+            result[i][1] = filePaths[i];
+        }
+        return result;
     }
 }
