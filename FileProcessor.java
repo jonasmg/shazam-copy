@@ -69,4 +69,33 @@ public class FileProcessor {
             }
         }
     }
+
+    public static String[] getFolders(String folderPath) {
+        File folder = new File(folderPath);
+        File[] listOfFolders = folder.listFiles();
+        String[] folderNames = new String[listOfFolders.length];
+        for (int i = 0; i < listOfFolders.length; i++) {
+            folderNames[i] = listOfFolders[i].getName();
+        }
+        return folderNames;
+    }
+    public static String[] getFilesInFolder(String folderPath) {
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+        String[] fileNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            fileNames[i] = listOfFiles[i].getName();
+        }
+        return fileNames;
+    }
+
+    public static String[] getFilesDefault(String folderPath) {
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+        String[] fileNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            fileNames[i] = listOfFiles[i].getName();
+        }
+        return fileNames;
+    }
 }

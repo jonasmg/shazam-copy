@@ -1,0 +1,20 @@
+snippetList_name2 - album2_life-after-youv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut1.wav_stft.txt_vectors.txt
+snippetList_name1 - album1_lover-loverv2_cut1mobiletalking.wav_stft.txt_vectors.txt
+snippetList_name1 - album1_smilev2_cut2mobile.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut2.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut4mobilesinging.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_broken-heartv2_cut2mobiletalking.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_broken-heartv2_cut1mobiletalking.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_life-after-youv2_cut2mobile.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_king-of-anythingv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name1 - album1_lover-loverv2_cut2mobiletalking.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_the-only-exceptionv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_the-only-exceptionv2_cut2mobiletalking.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut3.wav_stft.txt_vectors.txt
+snippetList_name1 - album1_smilev2_cut1mobile.wav_stft.txt_vectors.txt
+55 45 2 1
+55 36 3 1
+9 0 2 2
+9 8 2 2

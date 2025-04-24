@@ -1,0 +1,91 @@
+snippetList_name2 - album2_life-after-youv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut1.wav_stft.txt_vectors.txt
+snippetList_name1 - album1_lover-loverv2_cut1mobiletalking.wav_stft.txt_vectors.txt
+318 318 15 1
+29 15 6 11
+34 15 6 11
+285 286 5 12
+snippetList_name1 - album1_smilev2_cut2mobile.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut2.wav_stft.txt_vectors.txt
+snippetList_name2 - album2_uptown-funkv2_cut4mobilesinging.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_broken-heartv2_cut2mobiletalking.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_broken-heartv2_cut1mobiletalking.wav_stft.txt_vectors.txt
+109 124 18 1
+149 149 18 1
+snippetList_name2 - album2_life-after-youv2_cut2mobile.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_king-of-anythingv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name1 - album1_lover-loverv2_cut2mobiletalking.wav_stft.txt_vectors.txt
+66 60 5 1
+66 65 5 1
+66 57 6 1
+66 68 6 1
+289 276 5 1
+snippetList_name3 - album3_the-only-exceptionv2_cut1mobile.wav_stft.txt_vectors.txt
+snippetList_name3 - album3_the-only-exceptionv2_cut2mobiletalking.wav_stft.txt_vectors.txt
+64 59 6 0
+64 68 9 0
+253 270 7 2
+3 4 5 3
+64 68 6 3
+133 151 5 3
+286 270 6 3
+286 303 9 3
+283 270 5 4
+308 319 6 5
+308 303 7 5
+308 309 9 5
+314 303 5 7
+314 309 7 7
+314 309 6 8
+183 181 5 9
+snippetList_name2 - album2_uptown-funkv2_cut1mobile.wav_stft.txt_vectors.txt
+10 4 6 1
+252 242 5 1
+252 269 6 1
+252 263 8 1
+255 242 5 1
+255 269 6 1
+255 263 8 1
+105 108 5 2
+105 103 7 2
+170 157 5 2
+170 166 7 2
+297 304 6 2
+285 304 5 3
+114 103 5 4
+265 263 5 4
+snippetList_name2 - album2_uptown-funkv2_cut3.wav_stft.txt_vectors.txt
+262 245 5 17
+262 255 5 17
+snippetList_name1 - album1_smilev2_cut1mobile.wav_stft.txt_vectors.txt
+32 12 9 2
+32 35 9 2
+71 54 5 2
+71 53 6 2
+71 63 6 2
+71 61 7 2
+71 64 9 2
+281 274 8 2
+7 6 8 3
+7 12 8 3
+29 12 8 3
+29 35 8 3
+50 53 5 3
+50 63 5 3
+50 61 6 3
+50 35 8 3
+50 64 8 3
+181 186 8 3
+262 274 7 3
+262 255 8 3
+13 6 7 4
+13 12 7 4
+38 35 7 4
+255 274 6 4
+255 255 7 4
+51 35 6 5
+51 64 6 5
+269 274 5 5
+269 255 6 5
+69 64 5 6
+251 255 5 6

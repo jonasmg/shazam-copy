@@ -40,16 +40,16 @@ public class Main {
             System.out.println("File: " + fileName + " Path: " + filePath + " Genres: " + String.join(", ", genres));
         }
 
-        int fourierQuality = 320; //Bins for the height
-        int windowSize = 1000; // Window size in ms
-        int overlap = 0; // Overlap in percent
-        double minFreq = 250.0; // Minimum frequency
+        int fourierQuality = 640; //Bins for the height
+        int windowSize = 150; // Window size in ms
+        int overlap = 50; // Overlap in percent
+        double minFreq = 200.0; // Minimum frequency
         double maxFreq = 2000.0; // Maximum frequency
         double[] freqRange = {minFreq, maxFreq};
 
-        int bins = 6; // Number of bins allowed in list
-        int targetHeight = 20; // Height above and below point
-        int targetLength = 30; // Length to the right from start
+        int bins = 8; // Number of bins allowed in list
+        int targetHeight = 30; // Height above and below point
+        int targetLength = 50; // Length to the right from start
         int lengthToTarget = 2; // Length to target zone
         int[] targetZone = {targetHeight, targetLength, lengthToTarget};
 
@@ -125,50 +125,304 @@ public class Main {
             createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath);
         }
 
-        // Take every file in vectorListsInput
-        String[][] textFileNames = new String[0][0];
-        textFileNames = FileProcessor.getFiles("vectorListsInput");
+        // For every folder in fourierLists, create a database with corrosponding names
+        String[] folders = FileProcessor.getFolders("FourierLists");
 
-        // Empty obj list for results
-        ArrayList<Object[]> results = new ArrayList<>();
+        // For each folder get the folders inside vectorLists and create a database
+        for (String folder : folders) {
+            // Go inside the VectorLists folder
+            File vectorListsFolder = new File("FourierLists/" + folder + "/vectorLists");
+            // Get all folders inside vectorLists
+            File[] vectorLists = vectorListsFolder.listFiles();
+            // Check if vectorLists is not null
+            if (vectorLists == null) {
+                System.out.println("No vector lists found in " + folder + " With: " + vectorListsFolder);
+                continue;
+            }
 
-        // VectorDatabase list sorted from [0]
-        ArrayList<Object[]> databaseVectors = new ArrayList<>();
-        databaseVectors = getVectorDatabase("vectorLists");
+            // For each folder in vectorLists, create a database
+            for (File vectorList : vectorLists) {
+                // Get the name of the folder
+                String folderName = vectorList.getName();
+                // Create an in memory database with the name of the folder in workspace/VectorListOutput
+                String databaseName = folder + folderName;
+                // For every text file in the folder, add to database
+                File[] files = vectorList.listFiles();
+                // Check if files is not null
+                if (files == null) {
+                    System.out.println("No files found in " + folderName + " With: " + vectorList);
+                    continue;
+                }
 
-        // Compare vector files for each file in textFileNames
-        for (int i = 0; i < textFileNames.length; i++) {
-            // Print status
-            System.out.println("Processing " + textFileNames[i][0] + "...");
-            // Compare vectors and add to database with filename
-            Object comparisonResult = compareVectorsv2(textFileNames[i][1], databaseVectors);
-            // Pull out the filename and then count and then add to results with input filename
-            ArrayList<Object[]> comparisonResults = (ArrayList<Object[]>) comparisonResult;
-            results.add(new Object[]{textFileNames[i][0], comparisonResults});
-        }
+                System.out.println("______________________________________________________________");
+                System.out.println("Creating darabase for " + databaseName);
+                System.out.println("______________________________________________________________");
 
-        // Print results
-        for (Object[] result : results) {
-            String fileName = (String) result[0];
-            // Print input filename
-            System.out.println("\nInput file: " + fileName);
-            // Print results where each result gets 15 chars of length, so print song and count
-            for (int i = 1; i < 6; i++) {
-                if (i < ((ArrayList<Object[]>) result[1]).size()) {
-                    Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
-                    String songName = (String) songResult[0];
-                    int count = (int) songResult[1];
-                    // Print song name and count
-                    System.out.printf("%-22s Found vectors: %d", songName, count);
-                    // If first 5 chars match print "success"
-                    if (fileName.substring(0, 5).equals(songName.substring(0, 5))) {
-                        System.out.println(" - Correct");
-                    } else {
-                        System.out.println();
+                ArrayList<Object[]> databaseVectors = new ArrayList<>();
+
+                // For each file in the folder, write to the database
+                for (File file : files) {
+                    // Get the name of the file
+                    String fileName = file.getName();
+                            
+                    // If it's a text file open and write all lines to the database with the name of the file added to the start
+                    if (fileName.endsWith(".txt")) {
+                        // Open the file
+                        Scanner scanner = null;
+                        try {
+                            scanner = new Scanner(file);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        // Write the name of the file to the database
+                        while (scanner.hasNextLine()) {
+                            String line = scanner.nextLine();
+                            String[] parts = line.split(" ");
+                            int vectorX = Integer.parseInt(parts[0]);
+                            int vectorY = Integer.parseInt(parts[1]);
+                            int vectorZ = Integer.parseInt(parts[2]);
+                            int vectorW = Integer.parseInt(parts[3]);
+                            databaseVectors.add(new Object[]{vectorX, vectorY, vectorZ, vectorW, fileName});
+                        }
+                        // Close the scanner
+                        scanner.close();
                     }
                 }
+
+                // Sort the database vectors by the first element
+                databaseVectors = (ArrayList<Object[]>) databaseVectors.stream()
+                        .sorted((a, b) -> Integer.compare((int) a[0], (int) b[0]))
+                        .collect(Collectors.toList());
+
+                // Now compare vectors to all files in snippetVectors of the same type
+                String snippetVectorFolder = "FourierListsInput/" + folder + "/vectorListsInput/" + folderName;
+
+                // Make list of all text files in the folder
+                File snippetVectorList = new File(snippetVectorFolder);
+                File[] snippetVectorFiles = snippetVectorList.listFiles();
+                // Check if snippetVectorFiles is not null
+                if (snippetVectorFiles == null) {
+                    System.out.println("No snippet vector files found in " + folderName + " With: " + snippetVectorList);
+                    continue;
+                }
+                // For each file in the folder remove if not txt file
+                List<File> snippetVectorFilesList = new ArrayList<>();
+                for (File snippetVectorFile : snippetVectorFiles) {
+                    if (snippetVectorFile.getName().endsWith(".txt")) {
+                        snippetVectorFilesList.add(snippetVectorFile);
+                    }
+                }
+
+                // Make results list
+                ArrayList<Object[]> results = new ArrayList<>();
+
+                // For each file in the folder compare the vectors to the database with compareVectorsv2
+                for (File snippetVectorFile : snippetVectorFilesList) {
+                    // Get the name of the file
+                    String snippetFileName = snippetVectorFile.getName();
+
+                    // compare with compareVectorsv2
+                    // Get the file path
+                    String snippetFilePath = snippetVectorFile.getAbsolutePath();
+                    Object comparisonResult = compareVectorsv2(snippetFilePath, databaseVectors);
+
+                    // Pull out the filename and then count and then add to results with input filename
+                    ArrayList<Object[]> comparisonResults = (ArrayList<Object[]>) comparisonResult;
+                    results.add(new Object[]{snippetFilePath, comparisonResults});
+                }
+
+                // Print results
+                printResults(results);
             }
         }
+
+        // // For every folder in fourierLists/INFO/vectorLists, create a database with corrosponding names
+        // // Resulting in a FFTinfo/PROCCESSINGinfo
+        // String[] folders = FileProcessor.getFolders("FourierLists");
+
+        // // For each folder get the folders inside vectorLists and create a database
+        // for (String folder : folders) {
+        //     // Go inside the VectorLists folder
+        //     File vectorListsFolder = new File("FourierLists/" + folder + "/vectorLists");
+        //     // Get all folders inside vectorLists
+        //     File[] vectorLists = vectorListsFolder.listFiles();
+        //     // Check if vectorLists is not null
+        //     if (vectorLists == null) {
+        //         System.out.println("No vector lists found in " + folder + " With: " + vectorListsFolder);
+        //         continue;
+        //     }
+
+        //     // For each folder in vectorLists, create a database
+        //     for (File vectorList : vectorLists) {
+        //         // Get the name of the folder
+        //         String folderName = vectorList.getName();
+        //         // Create a database with the name of the folder in workspace/VectorListOutput
+        //         String databaseName = "SongVectors/" + folder + folderName + ".txt";
+        //         // Create the file if it doesn't exist
+        //         File databaseFile = new File(databaseName);
+        //         try {
+        //             databaseFile.createNewFile();
+        //         } catch (IOException e) {
+        //             e.printStackTrace();
+        //         }
+
+        //         // Write to the file
+        //         try {
+        //             FileWriter writer = new FileWriter(databaseFile);
+        //             // Get all files in the folder
+        //             File[] files = vectorList.listFiles();
+        //             // Check if files is not null
+        //             if (files == null) {
+        //                 System.out.println("No files found in " + folderName + " With: " + vectorList);
+        //                 continue;
+        //             }
+        //             // For each file in the folder, write to the database
+        //             for (File file : files) {
+        //                 // Get the name of the file
+        //                 String fileName = file.getName();
+                        
+        //                 // If it's a text file open and write all lines to the database with the name of the file added to the start
+        //                 if (fileName.endsWith(".txt")) {
+        //                     // Open the file
+        //                     Scanner scanner = new Scanner(file);
+        //                     // Write the name of the file to the database
+        //                     writer.write(fileName + "\n");
+        //                     // Write all lines to the database
+        //                     while (scanner.hasNextLine()) {
+        //                         String line = scanner.nextLine();
+        //                         writer.write(line + "\n");
+        //                     }
+        //                     // Close the scanner
+        //                     scanner.close();
+        //                 }
+        //             }
+        //             writer.close();
+        //         } catch (IOException e) {
+        //             e.printStackTrace();
+        //         }
+        //     }
+        // }
+
+        // folders = FileProcessor.getFolders("FourierListsInput");
+
+        // // For each folder get the folders inside vectorLists and create a database
+        // for (String folder : folders) {
+        //     // Go inside the VectorLists folder
+        //     File vectorListsFolder = new File("FourierListsInput/" + folder + "/vectorListsInput");
+        //     // Get all folders inside vectorLists
+        //     File[] vectorLists = vectorListsFolder.listFiles();
+        //     // Check if vectorLists is not null
+        //     if (vectorLists == null) {
+        //         System.out.println("No vector lists found in " + folder + " With: " + vectorListsFolder);
+        //         continue;
+        //     }
+
+        //     // For each folder in vectorLists, create a database
+        //     for (File vectorList : vectorLists) {
+        //         // Get the name of the folder
+        //         String folderName = vectorList.getName();
+        //         // Create a database with the name of the folder in workspace/VectorListOutput
+        //         String databaseName = "SnippetVectors/" + folder + folderName + ".txt";
+        //         // Create the file if it doesn't exist
+        //         File databaseFile = new File(databaseName);
+        //         try {
+        //             databaseFile.createNewFile();
+        //         } catch (IOException e) {
+        //             e.printStackTrace();
+        //         }
+
+        //         // Write to the file
+        //         try {
+        //             FileWriter writer = new FileWriter(databaseFile);
+        //             // Get all files in the folder
+        //             File[] files = vectorList.listFiles();
+        //             // Check if files is not null
+        //             if (files == null) {
+        //                 System.out.println("No files found in " + folderName + " With: " + vectorList);
+        //                 continue;
+        //             }
+        //             // For each file in the folder, write to the database
+        //             for (File file : files) {
+        //                 // Get the name of the file
+        //                 String fileName = file.getName();
+                        
+        //                 // If it's a text file open and write all lines to the database with the name of the file added to the start
+        //                 if (fileName.endsWith(".txt")) {
+        //                     // Open the file
+        //                     Scanner scanner = new Scanner(file);
+        //                     // Write the name of the file to the database
+        //                     writer.write(fileName + "\n");
+        //                     // Write all lines to the database
+        //                     while (scanner.hasNextLine()) {
+        //                         String line = scanner.nextLine();
+        //                         writer.write(line + "\n");
+        //                     }
+        //                     // Close the scanner
+        //                     scanner.close();
+        //                 }
+        //             }
+        //             writer.close();
+        //         } catch (IOException e) {
+        //             e.printStackTrace();
+        //         }
+        //     }
+        // }
+
+        // // For each file in SnippetVectors, compare the vectors to the database
+        // String[] snippetVectorFiles = FileProcessor.getFilesDefault("SnippetVectors");
+        // for (String snippetVectorFile : snippetVectorFiles) {
+        //     // Print status
+        //     System.out.println("Processing " + snippetVectorFile + "...");
+        //     // Read with a scanner
+        //     Scanner scanner = null;
+        //     try {
+        //         scanner = new Scanner(new File("SnippetVectors/" + snippetVectorFile));
+        //     } catch (FileNotFoundException e) {
+        //         System.out.println("File not found: " + snippetVectorFile);
+        //         continue;
+        //     }
+
+        //     // Init var for current file it's comparing
+        //     String currentSnippet = "";
+
+        //     // While the next line is not null
+        //     while (scanner.hasNextLine()) {
+        //         // Read line
+        //         String firstLine = scanner.nextLine();
+        //         // If line starts with "snippetList_", then it's a snippet name
+        //         if (firstLine.startsWith("snippetList_")) {
+        //             // Get the name of the snippet
+        //             currentSnippet = firstLine.substring(12);
+        //             // Print status
+        //             System.out.println("Processing snippet: " + currentSnippet);
+        //         } else {
+        //             // If line is not empty, then it's a vector
+        //             if (!firstLine.isEmpty()) {
+        //                 // Continue reading the file until it the next line is a name
+        //                 String[] vectorParts = firstLine.split(" ");
+        //                 // Get the vector parts
+        //                 int vectorX = Integer.parseInt(vectorParts[0]);
+        //                 int vectorY = Integer.parseInt(vectorParts[1]);
+        //                 int vectorZ = Integer.parseInt(vectorParts[2]);
+        //                 int vectorW = Integer.parseInt(vectorParts[3]);
+        //                 // Print the vector
+        //                 System.out.println("Vector: " + vectorX + " " + vectorY + " " + vectorZ + " " + vectorW);
+        //             }
+        //         }
+        //     }
+        // }
+
+
+        // // Take every file in vectorListsInput
+        // String[][] textFileNames = new String[0][0];
+        // textFileNames = FileProcessor.getFiles("vectorListsInput");
+
+        // // Empty obj list for results
+        // ArrayList<Object[]> results = new ArrayList<>();
+
+        // // VectorDatabase list sorted from [0]
+        // ArrayList<Object[]> databaseVectors = new ArrayList<>();
+        // databaseVectors = getVectorDatabase("vectorLists");
     }
 
     public static String createFourierTransform(Object[] fileInfo, int fourierQuality, int windowSize, int overlap, double[] freqRange, String outputFolder) {
@@ -942,5 +1196,49 @@ public class Main {
         databaseVectors.sort((a, b) -> (int) a[0] - (int) b[0]);
 
         return databaseVectors;
+    }
+
+    public static void compareResults(String[][] textFileNames, ArrayList<Object[]> databaseVectors, ArrayList<Object[]> results) {
+        // Compare vector files for each file in textFileNames
+        for (int i = 0; i < textFileNames.length; i++) {
+            // Print status
+            System.out.println("Processing " + textFileNames[i][0] + "...");
+            // Compare vectors and add to database with filename
+            Object comparisonResult = compareVectorsv2(textFileNames[i][1], databaseVectors);
+            // Pull out the filename and then count and then add to results with input filename
+            ArrayList<Object[]> comparisonResults = (ArrayList<Object[]>) comparisonResult;
+            results.add(new Object[]{textFileNames[i][0], comparisonResults});
+        }
+    }
+
+    public static void printResults(ArrayList<Object[]> results) {
+        // If results is empty say so
+        if (results.isEmpty()) {
+            System.out.println("No results found.");
+            return;
+        }
+
+        // Print results
+        for (Object[] result : results) {
+            String fileName = (String) result[0];
+            // Print input filename
+            System.out.println("\nInput file: " + fileName);
+            // Print results where each result gets 15 chars of length, so print song and count
+            for (int i = 1; i < 6; i++) {
+                if (i < ((ArrayList<Object[]>) result[1]).size()) {
+                    Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
+                    String songName = (String) songResult[0];
+                    int count = (int) songResult[1];
+                    // Print song name and count
+                    System.out.printf("%-22s Found vectors: %d", songName, count);
+                    // If first 5 chars match print "success"
+                    if (fileName.substring(0, 5).equals(songName.substring(0, 5))) {
+                        System.out.println(" - Correct");
+                    } else {
+                        System.out.println();
+                    }
+                }
+            }
+        }
     }
 }
