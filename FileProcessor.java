@@ -50,6 +50,16 @@ public class FileProcessor {
         return fileInfoList;
     }
 
+    public static String[] getSnippetFileNames(String folderPath) {
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+        String[] fileNames = new String[listOfFiles.length];
+        for (int i = 0; i < listOfFiles.length; i++) {
+            fileNames[i] = listOfFiles[i].getName();
+        }
+        return fileNames;
+    }
+
     private static void collectTracks(File albumFolder, String genres, List<Object[]> fileInfoList) {
         for (File file : albumFolder.listFiles()) {
             if (file.isFile()) {
