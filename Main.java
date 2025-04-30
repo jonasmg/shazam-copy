@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -22,10 +23,13 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Main {
+    public static final String[] SONG = {"FourierLists", "VectorLists"};
+    public static final String[] SNIPPET = {"FourierListsInput", "vectorListsInput"};
+    
     public static void main(String[] args) {
         // First is fileName, second is path, third is genreTouple
         List<Object[]> fileNames = new ArrayList<>();
-        String[] snippetNames = new String[0];
+        List<Object[]> snippetNames = new ArrayList<>();
 
         // Get files of audio and snippets
         fileNames = FileProcessor.getFiles2("songList");
@@ -40,98 +44,54 @@ public class Main {
             System.out.println("File: " + fileName + " Path: " + filePath + " Genres: " + String.join(", ", genres));
         }
 
-        int fourierQuality = 640; //Bins for the height
-        int windowSize = 150; // Window size in ms
-        int overlap = 50; // Overlap in percent
-        double minFreq = 200.0; // Minimum frequency
-        double maxFreq = 2000.0; // Maximum frequency
-        double[] freqRange = {minFreq, maxFreq};
+        int[] fourierQalityList = {(256 + 512), (512 + 512)};
+        int[] windowSizeList = {250, 400};
+        int[] overlapList = {0};
+        double[] minFreqList = {200.0};
+        double[] maxFreqList = {2000.0};
 
-        int bins = 8; // Number of bins allowed in list
-        int targetHeight = 30; // Height above and below point
-        int targetLength = 50; // Length to the right from start
-        int lengthToTarget = 2; // Length to target zone
-        int[] targetZone = {targetHeight, targetLength, lengthToTarget};
+        int[] binsList = {4, 8};
+        int[] targetHeightList = {30};
+        int[] targetLengthList = {50};
+        int[] lengthToTargetList = {4, 10};
 
-        // Create a database file for each file in songList
-        for (int ii = 0; ii < fileNames.size(); ii++) {
+        // Create arraylist object[] for all settings
+        ArrayList<Object[]> settings = new ArrayList<>();
 
-            // Get file name and path
-            Object[] fileInfo = (Object[]) fileNames.get(ii);
-            String fileName = (String) fileInfo[0];
-            String filePath = (String) fileInfo[1];
-            String[] genres = ((String) fileInfo[2]).split(" ");
+        // Function to add lists to settings
+        addToSettings(settings, fourierQalityList, windowSizeList, overlapList,
+                            minFreqList, maxFreqList, binsList, targetHeightList,
+                            targetLengthList, lengthToTargetList);
 
-            // Print status
-            System.out.println("Processing file: " + filePath + " Quality: " + fourierQuality + " WindowSize: " + windowSize);
-
-            // Output folder for vectorlist as vectorLists
-            String fourierOutputFolder = "FourierLists/"
-                                    + "FFT" + fourierQuality
-                                    + "_Win" + windowSize
-                                    + "_frq" + minFreq + "-" + maxFreq
-                                    + "_ovr" + overlap
-                                    + "/";
-
-            // Output folder for vectorlist as vectorLists
-            String vectorOutputFolder = fourierOutputFolder + "vectorLists/"
-                                    + "_Bin" + bins
-                                    + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
-                                    + "/";
-
-            String newFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder);
-            
-            // Create image
-            TextSpectrumToImage.FileToImage(newFilePath);
-            
-            createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath);
+        // Create folders if they dont exist for song and snippet
+        File songFolder = new File(SONG[0]);
+        File snippetFolder = new File(SNIPPET[0]);
+        if (!songFolder.exists()) {
+            songFolder.mkdirs();
+            System.out.println("Created folder: " + songFolder);
+        }
+        if (!snippetFolder.exists()) {
+            snippetFolder.mkdirs();
+            System.out.println("Created folder: " + snippetFolder);
         }
 
-        // Create input database
-        for (int ii = 0; ii < snippetNames.length; ii++) {
-            // Get file name and path
-            File file = new File("snippetList/" + snippetNames[ii]);
-            String fileName = file.getName();
-            String filePath = file.getPath();
-            String absPath = file.getAbsolutePath();
-
-            Object[] fileInfo = new Object[3];
-            fileInfo[0] = fileName;
-            fileInfo[1] = filePath;
-            fileInfo[2] = "snippet";
-
-            // Print status
-            System.out.println("Processing snippet file: " + fileName + " Quality: " + fourierQuality + " WindowSize: " + windowSize);
-
-            // Output folder for vectorlist as vectorLists
-            String fourierOutputFolder = "FourierListsInput/"
-                                    + "FFT" + fourierQuality
-                                    + "_Win" + windowSize
-                                    + "_frq" + minFreq + "-" + maxFreq
-                                    + "_ovr" + overlap
-                                    + "/";
-
-            // Output folder for vectorlist as vectorLists
-            String vectorOutputFolder = fourierOutputFolder + "vectorListsInput/"
-                                    + "_Bin" + bins
-                                    + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
-                                    + "/";
-
-            String newFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder);
-
-            // Create image
-            TextSpectrumToImage.FileToImage(newFilePath);
-            
-            createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath);
+        // Create song database file for each file in songList
+        for (int iii = 0; iii < settings.size(); iii++) {
+            for (int ii = 0; ii < fileNames.size(); ii++) {
+                calculateFFTAndCreateVectorList(fileNames, ii, settings, iii, SONG);
+            }
+            for (int ii = 0; ii < snippetNames.size(); ii++) {
+                calculateFFTAndCreateVectorList(snippetNames, ii, settings, iii, SNIPPET);
+            }
         }
 
         // For every folder in fourierLists, create a database with corrosponding names
-        String[] folders = FileProcessor.getFolders("FourierLists");
+        String[] folders = FileProcessor.getFolders(SONG[0]);
 
         // For each folder get the folders inside vectorLists and create a database
         for (String folder : folders) {
             // Go inside the VectorLists folder
-            File vectorListsFolder = new File("FourierLists/" + folder + "/vectorLists");
+            File vectorListsFolder = new File(SONG[0] + "/" + folder + "/" + SONG[1]);
             // Get all folders inside vectorLists
             File[] vectorLists = vectorListsFolder.listFiles();
             // Check if vectorLists is not null
@@ -159,6 +119,9 @@ public class Main {
                 System.out.println("______________________________________________________________");
 
                 ArrayList<Object[]> databaseVectors = new ArrayList<>();
+
+                // Create arraylist for summary results
+                ArrayList<Object[]> summaryResults = new ArrayList<>();
 
                 // For each file in the folder, write to the database
                 for (File file : files) {
@@ -189,13 +152,20 @@ public class Main {
                     }
                 }
 
-                // Sort the database vectors by the first element
+                // Sort the database vectors by the first element, 2nd and 3rd
                 databaseVectors = (ArrayList<Object[]>) databaseVectors.stream()
-                        .sorted((a, b) -> Integer.compare((int) a[0], (int) b[0]))
-                        .collect(Collectors.toList());
+                    .sorted((a, b) -> {
+                        int cmp = Integer.compare((int) a[0], (int) b[0]);
+                        if (cmp != 0) return cmp;
+                        cmp = Integer.compare((int) a[1], (int) b[1]);
+                        if (cmp != 0) return cmp;
+                        return Integer.compare((int) a[2], (int) b[2]);
+                    })
+                    .collect(Collectors.toList());
+
 
                 // Now compare vectors to all files in snippetVectors of the same type
-                String snippetVectorFolder = "FourierListsInput/" + folder + "/vectorListsInput/" + folderName;
+                String snippetVectorFolder = SNIPPET[0] + "/" + folder + "/" + SNIPPET[1] + "/" + folderName;
 
                 // Make list of all text files in the folder
                 File snippetVectorList = new File(snippetVectorFolder);
@@ -232,197 +202,31 @@ public class Main {
                 }
 
                 // Print results
-                printResults(results);
+                summaryResults = printResults(results);
+                
+                // Print summary results by counting how many successes vs failures
+                
+                // Count successes and failures
+                int successes = 0;
+                int kinda = 0;
+                int failures = 0;
+                for (Object[] summaryResult : summaryResults) {
+                    if ((int) summaryResult[1] == 0) {
+                    successes++;
+                } else if ((int) summaryResult[1] == 1 || (int) summaryResult[1] == 2) {
+                    kinda++;
+                } else {
+                    failures++;
+                }
+            }
+            // Print summary results
+            System.out.println("\nSummary results for " + folder + folderName + ":");
+            System.out.println("Successes: " + successes);
+            System.out.println("Kinda: " + kinda);
+            System.out.println("Failures: " + failures + "\n");
             }
         }
 
-        // // For every folder in fourierLists/INFO/vectorLists, create a database with corrosponding names
-        // // Resulting in a FFTinfo/PROCCESSINGinfo
-        // String[] folders = FileProcessor.getFolders("FourierLists");
-
-        // // For each folder get the folders inside vectorLists and create a database
-        // for (String folder : folders) {
-        //     // Go inside the VectorLists folder
-        //     File vectorListsFolder = new File("FourierLists/" + folder + "/vectorLists");
-        //     // Get all folders inside vectorLists
-        //     File[] vectorLists = vectorListsFolder.listFiles();
-        //     // Check if vectorLists is not null
-        //     if (vectorLists == null) {
-        //         System.out.println("No vector lists found in " + folder + " With: " + vectorListsFolder);
-        //         continue;
-        //     }
-
-        //     // For each folder in vectorLists, create a database
-        //     for (File vectorList : vectorLists) {
-        //         // Get the name of the folder
-        //         String folderName = vectorList.getName();
-        //         // Create a database with the name of the folder in workspace/VectorListOutput
-        //         String databaseName = "SongVectors/" + folder + folderName + ".txt";
-        //         // Create the file if it doesn't exist
-        //         File databaseFile = new File(databaseName);
-        //         try {
-        //             databaseFile.createNewFile();
-        //         } catch (IOException e) {
-        //             e.printStackTrace();
-        //         }
-
-        //         // Write to the file
-        //         try {
-        //             FileWriter writer = new FileWriter(databaseFile);
-        //             // Get all files in the folder
-        //             File[] files = vectorList.listFiles();
-        //             // Check if files is not null
-        //             if (files == null) {
-        //                 System.out.println("No files found in " + folderName + " With: " + vectorList);
-        //                 continue;
-        //             }
-        //             // For each file in the folder, write to the database
-        //             for (File file : files) {
-        //                 // Get the name of the file
-        //                 String fileName = file.getName();
-                        
-        //                 // If it's a text file open and write all lines to the database with the name of the file added to the start
-        //                 if (fileName.endsWith(".txt")) {
-        //                     // Open the file
-        //                     Scanner scanner = new Scanner(file);
-        //                     // Write the name of the file to the database
-        //                     writer.write(fileName + "\n");
-        //                     // Write all lines to the database
-        //                     while (scanner.hasNextLine()) {
-        //                         String line = scanner.nextLine();
-        //                         writer.write(line + "\n");
-        //                     }
-        //                     // Close the scanner
-        //                     scanner.close();
-        //                 }
-        //             }
-        //             writer.close();
-        //         } catch (IOException e) {
-        //             e.printStackTrace();
-        //         }
-        //     }
-        // }
-
-        // folders = FileProcessor.getFolders("FourierListsInput");
-
-        // // For each folder get the folders inside vectorLists and create a database
-        // for (String folder : folders) {
-        //     // Go inside the VectorLists folder
-        //     File vectorListsFolder = new File("FourierListsInput/" + folder + "/vectorListsInput");
-        //     // Get all folders inside vectorLists
-        //     File[] vectorLists = vectorListsFolder.listFiles();
-        //     // Check if vectorLists is not null
-        //     if (vectorLists == null) {
-        //         System.out.println("No vector lists found in " + folder + " With: " + vectorListsFolder);
-        //         continue;
-        //     }
-
-        //     // For each folder in vectorLists, create a database
-        //     for (File vectorList : vectorLists) {
-        //         // Get the name of the folder
-        //         String folderName = vectorList.getName();
-        //         // Create a database with the name of the folder in workspace/VectorListOutput
-        //         String databaseName = "SnippetVectors/" + folder + folderName + ".txt";
-        //         // Create the file if it doesn't exist
-        //         File databaseFile = new File(databaseName);
-        //         try {
-        //             databaseFile.createNewFile();
-        //         } catch (IOException e) {
-        //             e.printStackTrace();
-        //         }
-
-        //         // Write to the file
-        //         try {
-        //             FileWriter writer = new FileWriter(databaseFile);
-        //             // Get all files in the folder
-        //             File[] files = vectorList.listFiles();
-        //             // Check if files is not null
-        //             if (files == null) {
-        //                 System.out.println("No files found in " + folderName + " With: " + vectorList);
-        //                 continue;
-        //             }
-        //             // For each file in the folder, write to the database
-        //             for (File file : files) {
-        //                 // Get the name of the file
-        //                 String fileName = file.getName();
-                        
-        //                 // If it's a text file open and write all lines to the database with the name of the file added to the start
-        //                 if (fileName.endsWith(".txt")) {
-        //                     // Open the file
-        //                     Scanner scanner = new Scanner(file);
-        //                     // Write the name of the file to the database
-        //                     writer.write(fileName + "\n");
-        //                     // Write all lines to the database
-        //                     while (scanner.hasNextLine()) {
-        //                         String line = scanner.nextLine();
-        //                         writer.write(line + "\n");
-        //                     }
-        //                     // Close the scanner
-        //                     scanner.close();
-        //                 }
-        //             }
-        //             writer.close();
-        //         } catch (IOException e) {
-        //             e.printStackTrace();
-        //         }
-        //     }
-        // }
-
-        // // For each file in SnippetVectors, compare the vectors to the database
-        // String[] snippetVectorFiles = FileProcessor.getFilesDefault("SnippetVectors");
-        // for (String snippetVectorFile : snippetVectorFiles) {
-        //     // Print status
-        //     System.out.println("Processing " + snippetVectorFile + "...");
-        //     // Read with a scanner
-        //     Scanner scanner = null;
-        //     try {
-        //         scanner = new Scanner(new File("SnippetVectors/" + snippetVectorFile));
-        //     } catch (FileNotFoundException e) {
-        //         System.out.println("File not found: " + snippetVectorFile);
-        //         continue;
-        //     }
-
-        //     // Init var for current file it's comparing
-        //     String currentSnippet = "";
-
-        //     // While the next line is not null
-        //     while (scanner.hasNextLine()) {
-        //         // Read line
-        //         String firstLine = scanner.nextLine();
-        //         // If line starts with "snippetList_", then it's a snippet name
-        //         if (firstLine.startsWith("snippetList_")) {
-        //             // Get the name of the snippet
-        //             currentSnippet = firstLine.substring(12);
-        //             // Print status
-        //             System.out.println("Processing snippet: " + currentSnippet);
-        //         } else {
-        //             // If line is not empty, then it's a vector
-        //             if (!firstLine.isEmpty()) {
-        //                 // Continue reading the file until it the next line is a name
-        //                 String[] vectorParts = firstLine.split(" ");
-        //                 // Get the vector parts
-        //                 int vectorX = Integer.parseInt(vectorParts[0]);
-        //                 int vectorY = Integer.parseInt(vectorParts[1]);
-        //                 int vectorZ = Integer.parseInt(vectorParts[2]);
-        //                 int vectorW = Integer.parseInt(vectorParts[3]);
-        //                 // Print the vector
-        //                 System.out.println("Vector: " + vectorX + " " + vectorY + " " + vectorZ + " " + vectorW);
-        //             }
-        //         }
-        //     }
-        // }
-
-
-        // // Take every file in vectorListsInput
-        // String[][] textFileNames = new String[0][0];
-        // textFileNames = FileProcessor.getFiles("vectorListsInput");
-
-        // // Empty obj list for results
-        // ArrayList<Object[]> results = new ArrayList<>();
-
-        // // VectorDatabase list sorted from [0]
-        // ArrayList<Object[]> databaseVectors = new ArrayList<>();
-        // databaseVectors = getVectorDatabase("vectorLists");
     }
 
     public static String createFourierTransform(Object[] fileInfo, int fourierQuality, int windowSize, int overlap, double[] freqRange, String outputFolder) {
@@ -430,6 +234,30 @@ public class Main {
         String fileName = (String) fileInfo[0];
         String filePath = (String) fileInfo[1];
         String[] genres = ((String) fileInfo[2]).split(" ");
+
+        // Get create name of file with album and track
+        String[] pathParts = filePath.split("/");
+        String albumName = pathParts[pathParts.length - 2];
+
+        String fourierFileName = albumName + "_" + fileName;
+
+        // Create output folder if it doesn't exist
+        File folder = new File(outputFolder);
+        if (!folder.exists()) {
+            folder.mkdirs();
+            // Print create folder
+            System.out.println("Created folder: " + outputFolder);
+        }
+
+        // Ready file name for stft
+        String stftFileName = outputFolder + fourierFileName + "_stft.txt";
+        File stftFile = new File(stftFileName);
+
+        // If file already exists print such
+        if (stftFile.exists()) {
+            System.out.println("File already exists: " + stftFileName);
+            return stftFile.getAbsolutePath();
+        }
 
         audioSample a = new audioSample();
         a.setFile(filePath);
@@ -451,22 +279,6 @@ public class Main {
         stft.setSignal(samples);
         int[][] stftResult = stft.computeSTFT();
         System.out.println("STFT calculated!");
-
-        // Get create name of file with album and track
-        String[] pathParts = filePath.split("/");
-        String albumName = pathParts[pathParts.length - 2];
-
-        String fourierFileName = albumName + "_" + fileName;
-
-        // Create output folder if it doesn't exist
-        File folder = new File(outputFolder);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-
-        // Create file for stft
-        String stftFileName = outputFolder + fourierFileName + "_stft.txt";
-        File stftFile = new File(stftFileName);
 
         // Write to text file, each line is a row of the stftResult
         try {
@@ -622,19 +434,20 @@ public class Main {
 
         // Save processed file
         // _______________________________________________________
+        
 
-        // Create new file for processed stft image png file
-        String processedFileName = vectorOutputFolder + stftFileName + "_processed.png";
-        File processedFile = new File(processedFileName);
-        // Create the file if it doesn't exist
-        try {
-            processedFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // // Create new file for processed stft image png file
+        // String processedFileName = vectorOutputFolder + stftFileName + "_processed.png";
+        // File processedFile = new File(processedFileName);
+        // // Create the file if it doesn't exist
+        // try {
+        //     processedFile.createNewFile();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
 
-        // Write to text file using TextSpectrumToImage
-        TextSpectrumToImage.ArrayToImageWhite(proccessedFFT, processedFile);
+        // // Write to text file using TextSpectrumToImage
+        // TextSpectrumToImage.ArrayToImageWhite(proccessedFFT, processedFile);
 
         // Set target zone
         int targetHeight = targetZone[0];
@@ -682,207 +495,6 @@ public class Main {
             e.printStackTrace();
         }
     }
-
-    // // helper functiong process File
-    // public static void processFile(String[] fileInfo, int bins, int fourierQuality, int windowSize, String outputFolder, int[] targetZone, double[] freqRange) {
-    //     String fileName = fileInfo[0];
-    //     String filePath = fileInfo[1];
-    //     audioSample a = new audioSample();
-    //     a.setFile(filePath);
-    //     int numSamples = a.getMaxSamples();
-    //     double audioLength = a.getLength();
-    //     System.out.printf("Audio length: %.2f seconds\n", audioLength);
-    //     a.setNumSamples(numSamples);
-    //     a.setStepSize(1);
-    //     a.computeSamples();
-    //     int[] samples = a.getSamples();
-
-    //     // Print update
-    //     System.out.println("Number of samples: " + numSamples);
-    //     System.out.println("SampleRate: " + a.getSampleRate());
-
-    //     // Get resolution from calculateFourierTransform
-    //     CalculateFourierTransform c = new CalculateFourierTransform();
-    //     c.setSampleRate(a.getSampleRate());
-    //     c.setSampleSize(numSamples);
-    //     c.setSamples(samples);
-
-    //     // Print status
-    //     System.out.println("Calculating FFT with quality " + fourierQuality + "...");
-
-    //     // Quality
-    //     c.setFourierQuality(fourierQuality);
-    //     c.setPixelHeight(pixelHeight);
-    //     c.setPixelWidth(pixelWidth);
-
-    //     int[][] fft = c.calculateFastFourierTransform();
-    //     // Print status
-    //     System.out.println("FFT calculated!");
-
-    //     double maxMagnitude = c.getMaxMagnitude();
-    //     // Print maxMagnitude
-    //     System.out.println("Max magnitude: " + maxMagnitude);
-
-    //     //print max and min value in fft
-    //     int max = 0;
-    //     int min = 0;
-    //     for (int i = 0; i < pixelWidth; i++) {
-    //         for (int j = 0; j < pixelHeight; j++) {
-    //             max = Math.max(max, fft[j][i]);
-    //             min = Math.min(min, fft[j][i]);
-    //             // Make sure its the absolute value we get
-    //             fft[j][i] = Math.abs(fft[j][i]);
-    //         }
-    //     }
-    //     System.out.println("Max value in fft: " + max);
-    //     System.out.println("Min value in fft: " + min);
-
-    //     // Get frame length and shift
-    //     int frameLength = c.getFrameLength();
-    //     int shift = c.getFrameShift();
-
-    //     // Create new image for after being processed:
-    //     int[][] fftCopy = new int[pixelHeight][pixelWidth];
-    //     for (int i = 0; i < pixelWidth; i++) {
-    //         for (int j = 0; j < pixelHeight; j++) {
-    //             fftCopy[j][i] = fft[j][i];
-    //         }
-    //     }
-
-    //     int columns = secondLength*2; // columns is used for size of sensitivity
-
-    //     // Iterate over columns first
-    //     for (int i = 0; i < pixelWidth; i++) {
-    //         ArrayList<Integer> valuesList = new ArrayList<>();
-
-    //         // Gather values from the 4 columns before, 4 columns after, and the current column
-    //         for (int k = -columns; k <= columns; k++) {
-    //             if (i + k >= 0 && i + k < pixelWidth) {
-    //                 for (int j = 0; j < pixelHeight; j++) {
-    //                     valuesList.add(fftCopy[j][i + k]); 
-    //                 }
-    //             }
-    //         }
-
-    //         // Convert list to array and sort for percentile calculation
-    //         int[] values = valuesList.stream().mapToInt(Integer::intValue).toArray();
-    //         java.util.Arrays.sort(values);
-
-    //         // Compute percentiles (ensure indices are within bounds)
-    //         int percentileIndex1 = Math.max(0, Math.min(values.length - 1, (int) (0.99 * values.length)));
-    //         int percentileIndex2 = Math.max(0, Math.min(values.length - 1, (int) (0.98 * values.length)));
-    //         int percentileIndex3 = Math.max(0, Math.min(values.length - 1, (int) (0.97 * values.length)));
-
-    //         int percentile1 = values[percentileIndex1];
-    //         int percentile2 = values[percentileIndex2];
-    //         int percentile3 = values[percentileIndex3];
-
-    //         // Now iterate over the height (rows) and apply the computed percentile scaling
-    //         for (int j = 0; j < pixelHeight; j++) {
-    //             if (fftCopy[j][i] > percentile1) {
-    //                 fft[j][i] = (int) ((fftCopy[j][i] / (double) percentile1) * 255);
-    //             } else if (fftCopy[j][i] > percentile2) {
-    //                 fft[j][i] = (int) ((fftCopy[j][i] / (double) percentile1) * 255 * 0.95);
-    //             } else if (fftCopy[j][i] > percentile3) {
-    //                 fft[j][i] = (int) ((fftCopy[j][i] / (double) percentile2) * 255 * 0.90);
-    //             } else {
-    //                 fft[j][i] = 0;
-    //             }
-    //         }
-    //     }
-
-    //     // Maybe iterate over columns like before but only keep highest value in time frames of 4 columns
-
-    //     // Define the logarithmic scale factor
-    //     double logBase = 2; // Adjust this base for different growth rates
-
-    //     // Run logorithmic bins on fft
-    //     BinCalculations.logorithmic_bins(fft, bins, pixelHeight, pixelWidth, logBase);
-    //     // BinCalculations.linear_bins(fft, bins, pixelHeight, pixelWidth);
-
-    //     // Set target zone
-    //     int targetHeight = targetZone[0];
-    //     int targetLength = targetZone[1];
-    //     int lengthToTarget = targetZone[2];
-
-    //     // Create vector list
-    //     ArrayList<int[]> vectors = new ArrayList<>();
-
-    //     // Iterate through the width and height of fft
-    //     for (int i = 0; i < pixelWidth; i++) {
-    //         for (int j = 0; j < pixelHeight; j++) {
-    //             // If the pixel is nonzero
-    //             if (fft[j][i] != 0) {
-    //                 // Define target zone boundaries
-    //                 int startK = Math.max(i + lengthToTarget, 0);
-    //                 int endK = Math.min(i + lengthToTarget + targetLength, pixelWidth);
-    //                 int startL = Math.max(j - targetHeight, 0);
-    //                 int endL = Math.min(j + targetHeight, pixelHeight);
-
-    //                 // Search target zone
-    //                 for (int k = startK; k < endK; k++) {
-    //                     for (int l = startL; l < endL; l++) {
-    //                         if (fft[l][k] > 140) {
-    //                             // Store pixelheight1, pixelheight2, pixelwidth difference and pixelwidth position of pixel1
-    //                             vectors.add(new int[]{j, l, k - i, i});
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     // Print status
-    //     System.out.println("Creating image...");
-
-    //     // Create buffered image
-    //     BufferedImage bufferedImage = new BufferedImage(pixelWidth, pixelHeight, BufferedImage.TYPE_INT_RGB);
-    //     for (int i = 0; i < pixelWidth; i++) {
-    //         for (int j = 0; j < pixelHeight; j++) {
-    //             int value = fft[j][i];
-    //             value = Math.min(value, 255);
-    //             int rgb = new Color(value, value, value).getRGB();
-    //             bufferedImage.setRGB(i, j, rgb);
-    //         }
-    //     }
-
-    //     // File name, original + info
-    //     String imageName = "output/" + fileName + "-Q" + fourierQuality + "fft" + bins + "B-F" + frameLength + "S" + shift + "col-" + columns + "Clean.png";
-        
-    //     File file2 = new File(imageName);
-    //     try {
-    //         ImageIO.write(bufferedImage, "png", file2);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-        
-    //     // Print status
-    //     System.out.println("Image created!");
-        
-        
-    //     // Creating File for vectors
-    //     String vectorFileName = outputFolder + fileName + "Vectors.txt";
-    //     File file4 = new File(vectorFileName);
-    //     try {
-    //         file4.createNewFile();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     // Write to text file
-    //     try {
-    //         FileWriter writer = new FileWriter(file4);
-    //         for (int[] vector : vectors) {
-    //             writer.write(vector[0] + " " + vector[1] + " " + vector[2] + " " + vector[3] + "\n");
-    //         }
-    //         writer.close();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     // Print vector file info
-    //     System.out.println("Vector file created with " + vectors.size() + " vectors!");
-    // }
 
     public static boolean equalPoints(int[] a, int[] b) {
         return a[0] == b[0] && a[1] == b[1];
@@ -1039,22 +651,6 @@ public class Main {
         }
 
         return results2;
-
-        // // Print results
-        // for (Object[] result : results2) {
-        //     // If not the same file
-        //     if (!result[0].equals(filePath.substring(0, filePath.length() - 12))) {
-        //         // System.out.println(result[0] + " - Found vec: " + result[1] + " Out of: " + result[2] + " " + result[3] + "% LinearCount: " + result[4]);
-                
-        //         // Print results where each result gets 15 chars of length
-        //         System.out.printf("%-22s Found vec: %-8s Out of: %-10s %% %-4s LinearCount: %-8s\n", result[0], result[1], result[2], result[3], result[4]);
-
-        //         // // print file name and percentage of how sure they are with the name always being 25 chars and percent is over 4
-        //         // if ((int) result[5] > 6) {
-        //         //     System.out.printf("%-22s %s%%\n", result[0], result[5]);
-        //         // }
-        //     }
-        // }
     }
 
     public static Object compareVectorsv2(String filePath, ArrayList<Object[]> databaseVectors) {
@@ -1098,14 +694,28 @@ public class Main {
                 } else if ((int) databaseVectors.get(mid)[0] > vector[0]) {
                     high = mid - 1;
                 } else {
-                    placement = mid;
-                    break;
+                    // Now look for [1]
+                    if ((int) databaseVectors.get(mid)[1] < vector[1]) {
+                        low = mid + 1;
+                    } else if ((int) databaseVectors.get(mid)[1] > vector[1]) {
+                        high = mid - 1;
+                    } else {
+                        // Now look for [2]
+                        if ((int) databaseVectors.get(mid)[2] < vector[2]) {
+                            low = mid + 1;
+                        } else if ((int) databaseVectors.get(mid)[2] > vector[2]) {
+                            high = mid - 1;
+                        } else {
+                            placement = mid;
+                            break;
+                        }
+                    }
                 }
             }
 
             // Find first instance of [0] from the placement
             if (placement != -1) {
-                while (placement > 0 && (int) databaseVectors.get(placement - 1)[0] == vector[0]) {
+                while (placement > 0 && (int) databaseVectors.get(placement - 1)[2] == vector[2]) {
                     placement--;
                 }
             }
@@ -1146,18 +756,6 @@ public class Main {
 
         // Sort results from count
         results.sort((a, b) -> (int) b[1] - (int) a[1]);
-
-        // // Print results
-        // for (Object[] result : results) {
-        //     // Print results where each result gets 15 chars of length, so print song and count
-        //     System.out.printf("%-22s Found vec: %-8s\n", result[0], result[1]);
-        // }
-
-        // // Print top 5 results
-        // for (int i = 0; i < 5 && i < results.size(); i++) {
-        //     // Print results where each result gets 15 chars of length, so print song and count
-        //     System.out.printf("%-22s Found vec: %-8s\n", results.get(i)[0], results.get(i)[1]);
-        // }
 
         return results;
     }
@@ -1211,31 +809,146 @@ public class Main {
         }
     }
 
-    public static void printResults(ArrayList<Object[]> results) {
+    public static ArrayList<Object[]> printResults(ArrayList<Object[]> results) {
         // If results is empty say so
         if (results.isEmpty()) {
             System.out.println("No results found.");
-            return;
+            return null;
         }
+
+        // Create empty ArrayList for results
+        ArrayList<Object[]> resultsList = new ArrayList<>();
 
         // Print results
         for (Object[] result : results) {
             String fileName = (String) result[0];
-            // Print input filename
-            System.out.println("\nInput file: " + fileName);
-            // Print results where each result gets 15 chars of length, so print song and count
-            for (int i = 1; i < 6; i++) {
-                if (i < ((ArrayList<Object[]>) result[1]).size()) {
-                    Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
-                    String songName = (String) songResult[0];
-                    int count = (int) songResult[1];
-                    // Print song name and count
-                    System.out.printf("%-22s Found vectors: %d", songName, count);
-                    // If first 5 chars match print "success"
-                    if (fileName.substring(0, 5).equals(songName.substring(0, 5))) {
-                        System.out.println(" - Correct");
-                    } else {
-                        System.out.println();
+            // Extract useful filename by first splitting String into /, selecting last part, deleting the snippetList_ from the start
+            String[] fileNameParts = fileName.split("/");
+            String fileNameNew = fileNameParts[fileNameParts.length - 1];
+            // Now split file with _ and select the 2nd and 3rd part
+            String[] fileNameParts2 = fileNameNew.split("_");
+            String fileNameNew2 = fileNameParts2[1] + "_" + fileNameParts2[2];
+            // // Print input filename
+            // System.out.println("\nInput file: " + fileNameNew2 + "_" + fileNameParts2[3]);
+            // // Print results where each result gets 15 chars of length, so print song and count
+            // for (int i = 1; i < 6; i++) {
+            //     if (i < ((ArrayList<Object[]>) result[1]).size()) {
+            //         Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
+            //         String songName = (String) songResult[0];
+            //         int count = (int) songResult[1];
+            //         // Print song name and count
+            //         System.out.printf("%-22s Found vectors: %d", songName, count);
+            //         // If the fileNameNew2 match the song with the songname substring as long as the fileNameNew2, print "success"
+            //         if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+            //             System.out.println(" - Correct");
+            //         } else {
+            //             System.out.println();
+            //         }
+            //     }
+            // }
+
+            int songPos = 0;
+
+            // For each result in the results
+            for (int j = 1; j < ((ArrayList<Object[]>) result[1]).size(); j++) {
+                Object[] songResult = ((ArrayList<Object[]>) result[1]).get(j);
+                String songName = (String) songResult[0];
+                // If it's the correct song, add to resultsList save position
+                if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+                    songPos = j;
+                    break;
+                }
+            }
+
+            Object[] resultString = new Object[2];
+            resultString[0] = fileNameNew2 + "_" + fileNameParts2[3];
+            resultString[1] = songPos;
+            resultsList.add(resultString);
+        }
+
+        return resultsList;
+    }
+
+    // fileNames, ii, settings, iii, inputType
+    public static void calculateFFTAndCreateVectorList(List<Object[]> fileNames, int ii, ArrayList<Object[]> settings, int iii, String[] inputType) {
+
+        // Get settings
+        Object[] setting = settings.get(iii);
+        int fourierQuality = (int) setting[0];
+        int windowSize = (int) setting[1];
+        int overlap = (int) setting[2];
+        double minFreq = (double) setting[3];
+        double maxFreq = (double) setting[4];
+        int bins = (int) setting[5];
+        int targetHeight = (int) setting[6];
+        int targetLength = (int) setting[7];
+        int lengthToTarget = (int) setting[8];
+
+        // Set target zone
+        int[] targetZone = {targetHeight, targetLength, lengthToTarget};
+
+        // Get frequency range
+        double[] freqRange = new double[2];
+        freqRange[0] = minFreq;
+        freqRange[1] = maxFreq;
+
+        // Get file name and path
+        Object[] fileInfo = (Object[]) fileNames.get(ii);
+        String fileName = (String) fileInfo[0];
+        String filePath = (String) fileInfo[1];
+        String[] genres = ((String) fileInfo[2]).split(" ");
+        
+        // Print status
+        System.out.println("Processing file: " + filePath + " Quality: " + fourierQuality + " WindowSize: " + windowSize);
+
+        // Output folder for vectorlist as vectorLists
+        String fourierOutputFolder = inputType[0] + "/"
+                                + "FFT" + fourierQuality
+                                + "_Win" + windowSize
+                                + "_frq" + minFreq + "-" + maxFreq
+                                + "_ovr" + overlap
+                                + "/";
+
+        // Output folder for vectorlist as vectorLists
+        String vectorOutputFolder = fourierOutputFolder + inputType[1] + "/"
+                                + "_Bin" + bins
+                                + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
+                                + "/";
+
+        String newFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder);
+        // // Create image of spectrum
+        // TextSpectrumToImage.FileToImage(newFilePath);
+        
+        createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath);
+    }
+
+    public static void addToSettings(ArrayList<Object[]> settings, int[] fourierQualityList, int[] windowSizeList, int[] overlapList, double[] minFreqList, double[] maxFreqList, int[] binsList, int[] targetHeightList, int[] targetLengthList, int[] lengthToTargetList) {
+        // For each combination add to settings list
+        for (int i = 0; i < fourierQualityList.length; i++) {
+            for (int j = 0; j < windowSizeList.length; j++) {
+                for (int k = 0; k < overlapList.length; k++) {
+                    for (int l = 0; l < minFreqList.length; l++) {
+                        for (int m = 0; m < maxFreqList.length; m++) {
+                            for (int n = 0; n < binsList.length; n++) {
+                                for (int o = 0; o < targetHeightList.length; o++) {
+                                    for (int p = 0; p < targetLengthList.length; p++) {
+                                        for (int q = 0; q < lengthToTargetList.length; q++) {
+                                            settings.add(new Object[]{
+                                                fourierQualityList[i],
+                                                windowSizeList[j],
+                                                overlapList[k],
+                                                minFreqList[l],
+                                                maxFreqList[m],
+                                                binsList[n],
+                                                targetHeightList[o],
+                                                targetLengthList[p],
+                                                lengthToTargetList[q]
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

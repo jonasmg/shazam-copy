@@ -35,7 +35,7 @@ public class FileProcessor {
             }
         }
 
-        // For each folder, get all files and put into list of type Object[][] for path and genres
+        // For each folder, get all files and put into list of type Object[] for path and genres
         List<Object[]> fileInfoList = new ArrayList<>();
         for (File genreFolder : listOfGenreFolders) {
             String genres = genreFolder.getName();
@@ -50,12 +50,17 @@ public class FileProcessor {
         return fileInfoList;
     }
 
-    public static String[] getSnippetFileNames(String folderPath) {
+    public static List<Object[]> getSnippetFileNames(String folderPath) {
         File folder = new File(folderPath);
         File[] listOfFiles = folder.listFiles();
-        String[] fileNames = new String[listOfFiles.length];
+        List<Object[]> fileNames = new ArrayList<>();
         for (int i = 0; i < listOfFiles.length; i++) {
-            fileNames[i] = listOfFiles[i].getName();
+            Object[] fileName = new Object[listOfFiles.length];
+            fileName[0] = listOfFiles[i].getName();
+            fileName[1] = listOfFiles[i].getPath();
+            fileName[2] = "snippet";
+            fileNames.add(fileName);
+            // fileNames[i] = listOfFiles[i].getName();
         }
         return fileNames;
     }
