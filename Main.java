@@ -1,30 +1,17 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.io.FileNotFoundException;
-
-import javax.imageio.ImageIO;
-
-import org.w3c.dom.Text;
-
-import java.awt.image.BufferedImage;
-import java.awt.Color;
-
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-
-import java.util.Scanner;
-import java.util.List;
-import java.util.ArrayList;
 
 public class Main {
     public static final String[] SONG = {"FourierLists", "VectorLists"};
     public static final String[] SNIPPET = {"FourierListsInput", "vectorListsInput"};
+    public static final String BLACKLIST = "INFO.txt";
     
     public static void main(String[] args) {
         // First is fileName, second is path, third is genreTouple
@@ -44,16 +31,16 @@ public class Main {
             System.out.println("File: " + fileName + " Path: " + filePath + " Genres: " + String.join(", ", genres));
         }
 
-        int[] fourierQalityList = {(256 + 512), (512 + 512)};
+        int[] fourierQalityList = {256, 512, 768, 1024};
         int[] windowSizeList = {250, 400};
         int[] overlapList = {0};
         double[] minFreqList = {200.0};
         double[] maxFreqList = {2000.0};
 
-        int[] binsList = {4, 8};
+        int[] binsList = {4};
         int[] targetHeightList = {30};
         int[] targetLengthList = {50};
-        int[] lengthToTargetList = {4, 10};
+        int[] lengthToTargetList = {4};
 
         // Create arraylist object[] for all settings
         ArrayList<Object[]> settings = new ArrayList<>();
@@ -77,6 +64,11 @@ public class Main {
 
         // Create song database file for each file in songList
         for (int iii = 0; iii < settings.size(); iii++) {
+            // Create text file in folder if it doesn't exist
+            createInfoTextFile(settings, iii, SONG);
+            createInfoTextFile(settings, iii, SNIPPET);
+
+            // Give file to calculations, they should add to them
             for (int ii = 0; ii < fileNames.size(); ii++) {
                 calculateFFTAndCreateVectorList(fileNames, ii, settings, iii, SONG);
             }
@@ -114,9 +106,9 @@ public class Main {
                     continue;
                 }
 
-                System.out.println("______________________________________________________________");
-                System.out.println("Creating darabase for " + databaseName);
-                System.out.println("______________________________________________________________");
+                // System.out.println("______________________________________________________________");
+                // System.out.println("Creating darabase for " + databaseName);
+                // System.out.println("______________________________________________________________");
 
                 ArrayList<Object[]> databaseVectors = new ArrayList<>();
 
@@ -129,7 +121,7 @@ public class Main {
                     String fileName = file.getName();
                             
                     // If it's a text file open and write all lines to the database with the name of the file added to the start
-                    if (fileName.endsWith(".txt")) {
+                    if (fileName.endsWith(".txt") && !fileName.equals(BLACKLIST)) {
                         // Open the file
                         Scanner scanner = null;
                         try {
@@ -178,7 +170,7 @@ public class Main {
                 // For each file in the folder remove if not txt file
                 List<File> snippetVectorFilesList = new ArrayList<>();
                 for (File snippetVectorFile : snippetVectorFiles) {
-                    if (snippetVectorFile.getName().endsWith(".txt")) {
+                    if (snippetVectorFile.getName().endsWith(".txt") && !snippetVectorFile.getName().equals(BLACKLIST)) {
                         snippetVectorFilesList.add(snippetVectorFile);
                     }
                 }
@@ -213,27 +205,36 @@ public class Main {
                 for (Object[] summaryResult : summaryResults) {
                     if ((int) summaryResult[1] == 0) {
                     successes++;
-                } else if ((int) summaryResult[1] == 1 || (int) summaryResult[1] == 2) {
+                } else if ((int) summaryResult[1] == 1 || (int) summaryResult[1] == 2 || (int) summaryResult[1] == 3) {
                     kinda++;
                 } else {
                     failures++;
                 }
             }
+
             // Print summary results
             System.out.println("\nSummary results for " + folder + folderName + ":");
             System.out.println("Successes: " + successes);
             System.out.println("Kinda: " + kinda);
             System.out.println("Failures: " + failures + "\n");
+            // Print important stuff
+            String[] filePath = new String[2];
+            // Get fouriertransform folder 
+            filePath[0] = SONG[0] + "/" + folder + "/";
+            filePath[1] = filePath[0] + SONG[1] + "/" + folderName + "/";
+            readInfoTextFileFromLocation(filePath, SONG);
             }
         }
 
     }
 
-    public static String createFourierTransform(Object[] fileInfo, int fourierQuality, int windowSize, int overlap, double[] freqRange, String outputFolder) {
+    public static String createFourierTransform(Object[] fileInfo, int fourierQuality, int windowSize, int overlap, double[] freqRange, String outputFolder, AtomicInteger timeMs) {
         // Get file name and path
         String fileName = (String) fileInfo[0];
         String filePath = (String) fileInfo[1];
         String[] genres = ((String) fileInfo[2]).split(" ");
+
+        timeMs.set(0);
 
         // Get create name of file with album and track
         String[] pathParts = filePath.split("/");
@@ -241,13 +242,13 @@ public class Main {
 
         String fourierFileName = albumName + "_" + fileName;
 
-        // Create output folder if it doesn't exist
-        File folder = new File(outputFolder);
-        if (!folder.exists()) {
-            folder.mkdirs();
-            // Print create folder
-            System.out.println("Created folder: " + outputFolder);
-        }
+        // // Create output folder if it doesn't exist
+        // File folder = new File(outputFolder);
+        // if (!folder.exists()) {
+        //     folder.mkdirs();
+        //     // Print create folder
+        //     System.out.println("Created folder: " + outputFolder);
+        // }
 
         // Ready file name for stft
         String stftFileName = outputFolder + fourierFileName + "_stft.txt";
@@ -274,11 +275,18 @@ public class Main {
         System.out.println("Number of samples: " + numSamples);
         System.out.println("SampleRate: " + sampleRate);
 
+        // Start time
+        long startTime = System.currentTimeMillis();
+
         // Setup ShortTimeFourierTransform
         ShortTimeFourierTransform stft = new ShortTimeFourierTransform(sampleRate, fourierQuality, windowSize, overlap, freqRange[0], freqRange[1]);
         stft.setSignal(samples);
         int[][] stftResult = stft.computeSTFT();
         System.out.println("STFT calculated!");
+
+        // End time
+        long endTime = System.currentTimeMillis();
+        timeMs.set((int)(endTime - startTime));
 
         // Write to text file, each line is a row of the stftResult
         try {
@@ -300,11 +308,13 @@ public class Main {
         return stftFile.getAbsolutePath();
     }
 
-    public static void createVectorList(Object[] fileInfo, int bins, int[] targetZone, String fourierOutputFolder, String vectorOutputFolder, String newFilePath) {
+    public static void createVectorList(Object[] fileInfo, int bins, int[] targetZone, String fourierOutputFolder, String vectorOutputFolder, String newFilePath, AtomicInteger timeMs) {
         // Get file name and path
         String fileName = (String) fileInfo[0];
         String filePath = (String) fileInfo[1];
         String[] genres = ((String) fileInfo[2]).split(" ");
+
+        timeMs.set(0);
 
         // Create output folder if it doesn't exist
         File folder = new File(vectorOutputFolder);
@@ -320,12 +330,14 @@ public class Main {
         // Create file for vector list
         String vectorFileName = vectorOutputFolder + stftFileName + "_vectors.txt";
         File vectorFile = new File(vectorFileName);
-        // Create the file if it doesn't exist
-        try {
-            vectorFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
+        // If file already exists return
+        if (vectorFile.exists()) {
+            System.out.println("File already exists: " + vectorFileName);
+            return;
         }
+
+        // Time start
+        long startTime = System.currentTimeMillis();
 
         // Extract file information, columns are defined by spaces and rows are line breaks
         // So create scanner to read the file
@@ -484,6 +496,13 @@ public class Main {
             }
         }
 
+        // Create the file if it doesn't exist
+        try {
+            vectorFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Write to vector text file
         try {
             FileWriter writer = new FileWriter(vectorFile);
@@ -494,6 +513,10 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // Time end
+        long endTime = System.currentTimeMillis();
+        timeMs.set((int)(endTime - startTime));
     }
 
     public static boolean equalPoints(int[] a, int[] b) {
@@ -915,11 +938,46 @@ public class Main {
                                 + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
                                 + "/";
 
-        String newFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder);
+        // Ready time
+        AtomicInteger timeMs = new AtomicInteger(0);
+        String newFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder, timeMs);
+        // Print time
+        // System.out.println("Time: " + timeMs.get() + " ms");
+        if (timeMs.get() > 0) {
+            // Get file size
+            File file = new File(newFilePath);
+            long fileSizeFFT = file.length();
+            // Get song time
+            audioSample a = new audioSample();
+            a.setFile(filePath);
+            double audioLength = a.getLength();
+            long songTimeFFT = (long) (audioLength * 1000);
+            // Get number of songs
+            int numberOfSongsFFT = 1;
+            // add to addToInfoFile
+            addInfoTextFile(settings, iii, inputType, (int) timeMs.get(), (int) songTimeFFT, (int) fileSizeFFT, numberOfSongsFFT, 0, 0, 0, 0);
+        }
+
         // // Create image of spectrum
         // TextSpectrumToImage.FileToImage(newFilePath);
         
-        createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath);
+        timeMs.set(0);
+        createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath, timeMs);
+        if (timeMs.get() > 0) {
+            // Get file size
+            File file = new File(newFilePath);
+            long fileSizeVec = file.length();
+            // Get song time
+            audioSample a = new audioSample();
+            a.setFile(filePath);
+            double audioLength = a.getLength();
+            long songTimeVec = (long) (audioLength * 1000);
+            // Get number of songs
+            int numberOfSongsVec = 1;
+            // add to addToInfoFile
+            addInfoTextFile(settings, iii, inputType, 0, 0, 0, 0, (int) timeMs.get(), (int) songTimeVec, (int) fileSizeVec, numberOfSongsVec);
+        }
+
     }
 
     public static void addToSettings(ArrayList<Object[]> settings, int[] fourierQualityList, int[] windowSizeList, int[] overlapList, double[] minFreqList, double[] maxFreqList, int[] binsList, int[] targetHeightList, int[] targetLengthList, int[] lengthToTargetList) {
@@ -953,5 +1011,403 @@ public class Main {
                 }
             }
         }
+    }
+
+    public static void createInfoTextFile(ArrayList<Object[]> settings, int iii, String[] inputType) {
+        int calcTimeFFT = 0;
+        int songTimeFFT = 0;
+        int fileSizeFFT = 0;
+        int numberOfSongsFFT = 0;
+
+        int calcTimeVec = 0;
+        int songTimeVec = 0;
+        int fileSizeVec = 0;
+        int numberOfSongsVec = 0;
+
+        // Get settings
+        Object[] setting = settings.get(iii);
+        int fourierQuality = (int) setting[0];
+        int windowSize = (int) setting[1];
+        int overlap = (int) setting[2];
+        double minFreq = (double) setting[3];
+        double maxFreq = (double) setting[4];
+        int bins = (int) setting[5];
+        int targetHeight = (int) setting[6];
+        int targetLength = (int) setting[7];
+        int lengthToTarget = (int) setting[8];
+
+        // Output folder for vectorlist as vectorLists
+        String fourierOutputFolder = inputType[0] + "/"
+                                + "FFT" + fourierQuality
+                                + "_Win" + windowSize
+                                + "_frq" + minFreq + "-" + maxFreq
+                                + "_ovr" + overlap
+                                + "/";
+
+        // Output folder for vectorlist as vectorLists
+        String vectorOutputFolder = fourierOutputFolder + inputType[1] + "/"
+                                + "_Bin" + bins
+                                + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
+                                + "/";
+
+        // Create output folder if it doesn't exist
+        File folder = new File(fourierOutputFolder);
+        if (!folder.exists()) {
+            folder.mkdirs();
+            // Print create folder
+            System.out.println("Created folder: " + fourierOutputFolder);
+        }
+
+        // Create INFO.txt file in fourierOutputFolder
+        File infoFile = new File(fourierOutputFolder + "INFO.txt");
+        // If file doesnt exist, create file
+        if (!infoFile.exists()) {
+            // Create file and initialise values as rows: name_int
+            try {
+                infoFile.createNewFile();
+                // Print created file
+                System.out.println("Created file: " + infoFile.getAbsolutePath());
+                FileWriter writer = new FileWriter(infoFile);
+                writer.write("calcTimeFFT_" + calcTimeFFT + "\n");
+                writer.write("songTimeFFT_" + songTimeFFT + "\n");
+                writer.write("fileSizeFFT_" + fileSizeFFT + "\n");
+                writer.write("numberOfSongsFFT_" + numberOfSongsFFT + "\n");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Create output folder if it doesn't exist
+        File folder2 = new File(vectorOutputFolder);
+        if (!folder2.exists()) {
+            folder2.mkdirs();
+            // Print create folder
+            System.out.println("Created folder: " + vectorOutputFolder);
+        }
+
+        // Create INFO.txt file in vectorOutputFolder
+        File infoFile2 = new File(vectorOutputFolder + "INFO.txt");
+        // If file doesnt exist, create file
+        if (!infoFile2.exists()) {
+            // Create file and initialise values as rows: name_int
+            try {
+                infoFile2.createNewFile();
+                // Print created file
+                System.out.println("Created file: " + infoFile2.getAbsolutePath());
+                FileWriter writer = new FileWriter(infoFile2);
+                writer.write("calcTimeVec_" + calcTimeVec + "\n");
+                writer.write("songTimeVec_" + songTimeVec + "\n");
+                writer.write("fileSizeVec_" + fileSizeVec + "\n");
+                writer.write("numberOfSongsVec_" + numberOfSongsVec + "\n");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void addInfoTextFile(ArrayList<Object[]> settings, int iii, String[] inputType, int calcTimeFFT, int songTimeFFT, int fileSizeFFT, int numberOfSongsFFT, int calcTimeVec, int songTimeVec, int fileSizeVec, int numberOfSongsVec) {
+        // Get settings
+        Object[] setting = settings.get(iii);
+        int fourierQuality = (int) setting[0];
+        int windowSize = (int) setting[1];
+        int overlap = (int) setting[2];
+        double minFreq = (double) setting[3];
+        double maxFreq = (double) setting[4];
+        int bins = (int) setting[5];
+        int targetHeight = (int) setting[6];
+        int targetLength = (int) setting[7];
+        int lengthToTarget = (int) setting[8];
+
+        // Output folder for vectorlist as vectorLists
+        String fourierOutputFolder = inputType[0] + "/"
+                                + "FFT" + fourierQuality
+                                + "_Win" + windowSize
+                                + "_frq" + minFreq + "-" + maxFreq
+                                + "_ovr" + overlap
+                                + "/";
+
+        // Output folder for vectorlist as vectorLists
+        String vectorOutputFolder = fourierOutputFolder + inputType[1] + "/"
+                                + "_Bin" + bins
+                                + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
+                                + "/";
+
+        int calcTimeFFTCur = 0;
+        int songTimeFFTCur = 0;
+        int fileSizeFFTCur = 0;
+        int numberOfSongsFFTCur = 0;
+
+        int calcTimeVecCur = 0;
+        int songTimeVecCur = 0;
+        int fileSizeVecCur = 0;
+        int numberOfSongsVecCur = 0;
+
+        // Try to read each value and save as current
+        File infoFile = new File(fourierOutputFolder + "INFO.txt");
+        try {
+            Scanner scanner = new Scanner(infoFile);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("_");
+                if (parts[0].equals("calcTimeFFT")) {
+                    calcTimeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("songTimeFFT")) {
+                    songTimeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("fileSizeFFT")) {
+                    fileSizeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("numberOfSongsFFT")) {
+                    numberOfSongsFFTCur = Integer.parseInt(parts[1]);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Calculate new values
+        calcTimeFFTCur += calcTimeFFT;
+        songTimeFFTCur += songTimeFFT;
+        fileSizeFFTCur += fileSizeFFT;
+        numberOfSongsFFTCur += numberOfSongsFFT;
+
+        // Write new values to file
+        try {
+            FileWriter writer = new FileWriter(infoFile);
+            writer.write("calcTimeFFT_" + calcTimeFFTCur + "\n");
+            writer.write("songTimeFFT_" + songTimeFFTCur + "\n");
+            writer.write("fileSizeFFT_" + fileSizeFFTCur + "\n");
+            writer.write("numberOfSongsFFT_" + numberOfSongsFFTCur + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Print status
+        System.out.println("Added to INFO.txt file in " + fourierOutputFolder);
+
+        // Try to read each value and save as current
+        File infoFile2 = new File(vectorOutputFolder + "INFO.txt");
+        try {
+            Scanner scanner = new Scanner(infoFile2);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("_");
+                if (parts[0].equals("calcTimeVec")) {
+                    calcTimeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("songTimeVec")) {
+                    songTimeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("fileSizeVec")) {
+                    fileSizeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("numberOfSongsVec")) {
+                    numberOfSongsVecCur = Integer.parseInt(parts[1]);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Calculate new values
+        calcTimeVecCur += calcTimeVec;
+        songTimeVecCur += songTimeVec;
+        fileSizeVecCur += fileSizeVec;
+        numberOfSongsVecCur += numberOfSongsVec;
+        // Write new values to file
+        try {
+            FileWriter writer = new FileWriter(infoFile2);
+            writer.write("calcTimeVec_" + calcTimeVecCur + "\n");
+            writer.write("songTimeVec_" + songTimeVecCur + "\n");
+            writer.write("fileSizeVec_" + fileSizeVecCur + "\n");
+            writer.write("numberOfSongsVec_" + numberOfSongsVecCur + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Print status
+        System.out.println("Added to INFO.txt file in " + vectorOutputFolder);
+    }
+
+    public static void readInfoTextFile(ArrayList<Object[]> settings, int iii, String[] inputType) {
+        // Get settings
+        Object[] setting = settings.get(iii);
+        int fourierQuality = (int) setting[0];
+        int windowSize = (int) setting[1];
+        int overlap = (int) setting[2];
+        double minFreq = (double) setting[3];
+        double maxFreq = (double) setting[4];
+        int bins = (int) setting[5];
+        int targetHeight = (int) setting[6];
+        int targetLength = (int) setting[7];
+        int lengthToTarget = (int) setting[8];
+
+        // Output folder for vectorlist as vectorLists
+        String fourierOutputFolder = inputType[0] + "/"
+                                + "FFT" + fourierQuality
+                                + "_Win" + windowSize
+                                + "_frq" + minFreq + "-" + maxFreq
+                                + "_ovr" + overlap
+                                + "/";
+
+        // Output folder for vectorlist as vectorLists
+        String vectorOutputFolder = fourierOutputFolder + inputType[1] + "/"
+                                + "_Bin" + bins
+                                + "_Zne" + targetHeight + "-" + targetLength + "-" + lengthToTarget
+                                + "/";
+
+        int calcTimeFFTCur = 0;
+        int songTimeFFTCur = 0;
+        int fileSizeFFTCur = 0;
+        int numberOfSongsFFTCur = 0;
+        int calcTimeVecCur = 0;
+        int songTimeVecCur = 0;
+        int fileSizeVecCur = 0;
+        int numberOfSongsVecCur = 0;
+
+        // Try to read each value and save as current
+        File infoFile = new File(fourierOutputFolder + "INFO.txt");
+        try {
+            Scanner scanner = new Scanner(infoFile);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("_");
+                if (parts[0].equals("calcTimeFFT")) {
+                    calcTimeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("songTimeFFT")) {
+                    songTimeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("fileSizeFFT")) {
+                    fileSizeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("numberOfSongsFFT")) {
+                    numberOfSongsFFTCur = Integer.parseInt(parts[1]);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Read from vectorOutputFolder
+        File infoFile2 = new File(vectorOutputFolder + "INFO.txt");
+        try {
+            Scanner scanner = new Scanner(infoFile2);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("_");
+                if (parts[0].equals("calcTimeVec")) {
+                    calcTimeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("songTimeVec")) {
+                    songTimeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("fileSizeVec")) {
+                    fileSizeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("numberOfSongsVec")) {
+                    numberOfSongsVecCur = Integer.parseInt(parts[1]);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Print status and all values
+        System.out.println("INFO.txt file in " + fourierOutputFolder);
+        System.out.println("calcTimeFFT: " + calcTimeFFTCur);
+        System.out.println("songTimeFFT: " + songTimeFFTCur);
+        System.out.println("fileSizeFFT: " + fileSizeFFTCur);
+        System.out.println("numberOfSongsFFT: " + numberOfSongsFFTCur);
+        System.out.println("INFO.txt file in " + vectorOutputFolder);
+        System.out.println("calcTimeVec: " + calcTimeVecCur);
+        System.out.println("songTimeVec: " + songTimeVecCur);
+        System.out.println("fileSizeVec: " + fileSizeVecCur);
+        System.out.println("numberOfSongsVec: " + numberOfSongsVecCur);
+        // Print status
+        System.out.println("INFO.txt file read successfully.");
+    }
+
+    public static void readInfoTextFileFromLocation(String[] filePath, String[] inputType) {
+        int calcTimeFFTCur = 0;
+        int songTimeFFTCur = 0;
+        int fileSizeFFTCur = 0;
+        int numberOfSongsFFTCur = 0;
+        int calcTimeVecCur = 0;
+        int songTimeVecCur = 0;
+        int fileSizeVecCur = 0;
+        int numberOfSongsVecCur = 0;
+
+        // Try to read each value and save as current
+        File infoFile = new File(filePath[0] + "INFO.txt");
+        try {
+            Scanner scanner = new Scanner(infoFile);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("_");
+                if (parts[0].equals("calcTimeFFT")) {
+                    calcTimeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("songTimeFFT")) {
+                    songTimeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("fileSizeFFT")) {
+                    fileSizeFFTCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("numberOfSongsFFT")) {
+                    numberOfSongsFFTCur = Integer.parseInt(parts[1]);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Read from vectorOutputFolder
+        File infoFile2 = new File(filePath[1] + "INFO.txt");
+        try {
+            Scanner scanner = new Scanner(infoFile2);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split("_");
+                if (parts[0].equals("calcTimeVec")) {
+                    calcTimeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("songTimeVec")) {
+                    songTimeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("fileSizeVec")) {
+                    fileSizeVecCur = Integer.parseInt(parts[1]);
+                } else if (parts[0].equals("numberOfSongsVec")) {
+                    numberOfSongsVecCur = Integer.parseInt(parts[1]);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        
+        // Convert song duration from ms to seconds
+        double songTimeFFTSeconds = songTimeFFTCur / 1000.0;
+        double songTimeVecSeconds = songTimeVecCur / 1000.0;
+
+        // Calculate time in ms per second of audio
+        double calcTimeFFTPerSecond = calcTimeFFTCur / songTimeFFTSeconds;
+        double calcTimeVecPerSecond = calcTimeVecCur / songTimeVecSeconds;
+
+        // Convert to seconds per minute of audio
+        double calcTimeFFTPerMinute = calcTimeFFTPerSecond * 60.0 / 1000.0;
+        double calcTimeVecPerMinute = calcTimeVecPerSecond * 60.0 / 1000.0;
+
+        // Calculate file size in bytes per second, then KB per minute
+        double fileSizeFFTPerSecond = fileSizeFFTCur / songTimeFFTSeconds;
+        double fileSizeVecPerSecond = fileSizeVecCur / songTimeVecSeconds;
+        double fileSizeFFTPerMinuteKB = fileSizeFFTPerSecond * 60.0 / 1024.0;
+        double fileSizeVecPerMinuteKB = fileSizeVecPerSecond * 60.0 / 1024.0;
+
+        // Print results
+        System.out.printf("FFT calculation time per minute of audio: %.2f sec/min%n", calcTimeFFTPerMinute);
+        System.out.printf("FFT file size per minute of audio: %.2f KB/min%n", fileSizeFFTPerMinuteKB);
+        System.out.printf("Vector calculation time per minute of audio: %.2f sec/min%n", calcTimeVecPerMinute);
+        System.out.printf("Vector file size per minute of audio: %.2f KB/min%n", fileSizeVecPerMinuteKB);
+
+        // Print total length of audio and vector
+        System.out.println("Total length of audio: " + (songTimeFFTSeconds / 60) + " minutes");
+        // Print total file size in mb
+        System.out.println("Total file size of FFT: " + (fileSizeFFTCur / 1024.0 / 1024.0) + " MB");
+        System.out.println("Total file size of vector: UNKNOWN MB");
+
     }
 }

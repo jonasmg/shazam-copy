@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileProcessor {
+    public static final String BLACKLIST = "INFO.txt";
 
     public static String[][] getFiles(String folderPath) {
         // Get all files in folder
@@ -55,19 +56,21 @@ public class FileProcessor {
         File[] listOfFiles = folder.listFiles();
         List<Object[]> fileNames = new ArrayList<>();
         for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isDirectory() || listOfFiles[i].getName().equals(BLACKLIST)) {
+                continue;
+            }
             Object[] fileName = new Object[listOfFiles.length];
             fileName[0] = listOfFiles[i].getName();
             fileName[1] = listOfFiles[i].getPath();
             fileName[2] = "snippet";
             fileNames.add(fileName);
-            // fileNames[i] = listOfFiles[i].getName();
         }
         return fileNames;
     }
 
     private static void collectTracks(File albumFolder, String genres, List<Object[]> fileInfoList) {
         for (File file : albumFolder.listFiles()) {
-            if (file.isFile()) {
+            if (file.isFile() && !file.getName().equals(BLACKLIST)) {
                 String name = file.getName();
                 String path = file.getAbsolutePath();
                 fileInfoList.add(new Object[]{ name, path, genres });
@@ -89,7 +92,9 @@ public class FileProcessor {
         File[] listOfFiles = folder.listFiles();
         String[] fileNames = new String[listOfFiles.length];
         for (int i = 0; i < listOfFiles.length; i++) {
-            fileNames[i] = listOfFiles[i].getName();
+            if ( !listOfFiles[i].getName().equals(BLACKLIST)) {
+                fileNames[i] = listOfFiles[i].getName();
+            }
         }
         return fileNames;
     }
