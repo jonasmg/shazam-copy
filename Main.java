@@ -2,11 +2,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static final String[] SONG = {"FourierLists", "VectorLists"};
@@ -31,9 +33,9 @@ public class Main {
             System.out.println("File: " + fileName + " Path: " + filePath + " Genres: " + String.join(", ", genres));
         }
 
-        int[] fourierQalityList = {256, 512, 768, 1024};
-        int[] windowSizeList = {250, 400};
-        int[] overlapList = {0};
+        int[] fourierQalityList = {768, 1024};
+        int[] windowSizeList = {300, 400, 500};
+        int[] overlapList = {0, 50};
         double[] minFreqList = {200.0};
         double[] maxFreqList = {2000.0};
 
@@ -108,7 +110,6 @@ public class Main {
 
                 // System.out.println("______________________________________________________________");
                 // System.out.println("Creating darabase for " + databaseName);
-                // System.out.println("______________________________________________________________");
 
                 ArrayList<Object[]> databaseVectors = new ArrayList<>();
 
@@ -225,7 +226,6 @@ public class Main {
             readInfoTextFileFromLocation(filePath, SONG);
             }
         }
-
     }
 
     public static String createFourierTransform(Object[] fileInfo, int fourierQuality, int windowSize, int overlap, double[] freqRange, String outputFolder, AtomicInteger timeMs) {
@@ -768,6 +768,8 @@ public class Main {
         for (String song : distinctSongs) {
             // Count how many vectors are in the song
             int count = 0;
+            // Array for found vectors to be used for more complex calculations
+            ArrayList<Object[]> foundVectors = new ArrayList<>();
             for (Object[] dbVector : databaseVectorsFound) {
                 if (dbVector[4].equals(song)) {
                     count++;
@@ -780,7 +782,72 @@ public class Main {
         // Sort results from count
         results.sort((a, b) -> (int) b[1] - (int) a[1]);
 
-        return results;
+        // Create results2
+        ArrayList<Object[]> results2 = new ArrayList<>();
+
+        // for the top 4 results
+        for (int i = 0; i < 6; i++) {
+            // If there is no result, break
+            if (i >= results.size()) {
+                break;
+            }
+            // Gather all vectors from the song
+            ArrayList<Object[]> songVectors = new ArrayList<>();
+            for (Object[] dbVector : databaseVectorsFound) {
+                if (dbVector[4].equals(results.get(i)[0])) {
+                    songVectors.add(dbVector);
+                }
+            }
+
+            // Sort songVectors by offset
+            songVectors.sort((a, b) -> (int) a[3] - (int) b[3]);
+
+            // Get smallest and largest offset of vectors
+            int smallestOffset = (int) songVectors.get(0)[3];
+            int largestOffset = (int) songVectors.get(songVectors.size() - 1)[3];
+
+            // Get difference
+            int offsetDifference = largestOffset - smallestOffset;
+
+            // Divide by dividesize
+            int dividesize = 2;
+            int step = (int) offsetDifference / dividesize;
+            
+            // Map to count occurrences of each offset
+            Map<Integer, Integer> offsetCounts = new HashMap<>();
+            for (Object[] vector : songVectors) {
+                int offset = (int) vector[3];
+                offsetCounts.put(offset, offsetCounts.getOrDefault(offset, 0) + 1);
+            }
+
+            // Array of vectors (step buckets)
+            ArrayList<int[]> vectors = new ArrayList<>();
+            for (int ii = 0; ii < dividesize; ii++) {
+                int start = smallestOffset + ii * step;
+                int end = Math.min(start + step, largestOffset + 1);
+                int count = 0;
+                for (int offset = start; offset < end; offset++) {
+                    count += offsetCounts.getOrDefault(offset, 0);
+                }
+                vectors.add(new int[]{start, count});
+            }
+
+
+            // Take 4 largest steps and plus and add to linearCount
+            vectors.sort((a, b) -> b[1] - a[1]);
+            int linearCount = 0;
+            for (int j = 0; j < dividesize*2; j++) {
+                // If vectors is not empty
+                if (vectors.size() > j) {
+                    linearCount += vectors.get(j)[1];
+                }
+            }
+
+            // Add to results2
+            results2.add(new Object[]{ results.get(i)[0], linearCount});
+        }
+
+        return results2;
     }
 
     public static ArrayList<Object[]> getVectorDatabase(String folderPath) {
@@ -1378,7 +1445,7 @@ public class Main {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        
+
         // Convert song duration from ms to seconds
         double songTimeFFTSeconds = songTimeFFTCur / 1000.0;
         double songTimeVecSeconds = songTimeVecCur / 1000.0;
