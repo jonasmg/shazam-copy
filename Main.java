@@ -33,16 +33,16 @@ public class Main {
             System.out.println("File: " + fileName + " Path: " + filePath + " Genres: " + String.join(", ", genres));
         }
 
-        int[] fourierQalityList = {768, 1024};
-        int[] windowSizeList = {300, 400, 500};
-        int[] overlapList = {0, 50};
+        int[] fourierQalityList = {768};
+        int[] windowSizeList = {250};
+        int[] overlapList = {0, 50, 75};
         double[] minFreqList = {200.0};
         double[] maxFreqList = {2000.0};
 
-        int[] binsList = {4};
-        int[] targetHeightList = {30};
-        int[] targetLengthList = {50};
-        int[] lengthToTargetList = {4};
+        int[] binsList = {5};
+        int[] targetHeightList = {20, 50, 60};
+        int[] targetLengthList = {20, 50, 70};
+        int[] lengthToTargetList = {1, 10};
 
         // Create arraylist object[] for all settings
         ArrayList<Object[]> settings = new ArrayList<>();
@@ -79,6 +79,9 @@ public class Main {
             }
         }
 
+        // Results list for summary results
+        ArrayList<Object[]> finalSummaryResults = new ArrayList<>();
+
         // For every folder in fourierLists, create a database with corrosponding names
         String[] folders = FileProcessor.getFolders(SONG[0]);
 
@@ -108,9 +111,7 @@ public class Main {
                     continue;
                 }
 
-                // System.out.println("______________________________________________________________");
-                // System.out.println("Creating darabase for " + databaseName);
-
+                // Create arraylist for database vectors
                 ArrayList<Object[]> databaseVectors = new ArrayList<>();
 
                 // Create arraylist for summary results
@@ -187,7 +188,7 @@ public class Main {
                     // compare with compareVectorsv2
                     // Get the file path
                     String snippetFilePath = snippetVectorFile.getAbsolutePath();
-                    Object comparisonResult = compareVectorsv2(snippetFilePath, databaseVectors);
+                    Object comparisonResult = compareVectorsCount(snippetFilePath, databaseVectors);
 
                     // Pull out the filename and then count and then add to results with input filename
                     ArrayList<Object[]> comparisonResults = (ArrayList<Object[]>) comparisonResult;
@@ -195,7 +196,7 @@ public class Main {
                 }
 
                 // Print results
-                summaryResults = printResults(results);
+                summaryResults = calculateResults(results);
                 
                 // Print summary results by counting how many successes vs failures
                 
@@ -206,25 +207,47 @@ public class Main {
                 for (Object[] summaryResult : summaryResults) {
                     if ((int) summaryResult[1] == 0) {
                     successes++;
-                } else if ((int) summaryResult[1] == 1 || (int) summaryResult[1] == 2 || (int) summaryResult[1] == 3) {
+                } else if ((int) summaryResult[1] == 1 || (int) summaryResult[1] == 2) {
                     kinda++;
                 } else {
                     failures++;
                 }
             }
 
+            // Calculate success rate
+            double successRate = (double) successes / (successes + kinda + failures) * 100;
+            
             // Print summary results
-            System.out.println("\nSummary results for " + folder + folderName + ":");
-            System.out.println("Successes: " + successes);
-            System.out.println("Kinda: " + kinda);
-            System.out.println("Failures: " + failures + "\n");
+            // System.out.println("\nSummary results for " + folder + folderName + ": " + successRate + "% success rate");
+            // System.out.println("Successes: " + successes);
+            // System.out.println("Kinda: " + kinda);
+            // System.out.println("Failures: " + failures + "\n");
             // Print important stuff
-            String[] filePath = new String[2];
+            String[] filePath = new String[3];
             // Get fouriertransform folder 
             filePath[0] = SONG[0] + "/" + folder + "/";
             filePath[1] = filePath[0] + SONG[1] + "/" + folderName + "/";
-            readInfoTextFileFromLocation(filePath, SONG);
+            // readInfoTextFileFromLocation(filePath, SONG);
+            filePath[2] = folder + folderName;
+
+            // Add to final summary results
+            finalSummaryResults.add(new Object[]{filePath, successRate, successes, kinda, failures});
             }
+        }
+
+        // Sort finalSummaryResults by success rate
+        finalSummaryResults.sort((a, b) -> Double.compare((double) b[1], (double) a[1]));
+
+        // Print final summary results
+        System.out.println("\nFinal summary results:");
+        for (Object[] result : finalSummaryResults) {
+            String[] filePath = (String[]) result[0];
+            double successRate = (double) result[1];
+            int successes = (int) result[2];
+            int kinda = (int) result[3];
+            int failures = (int) result[4];
+
+            System.out.println("File: " + filePath[2] + " Success rate: " + successRate + "%");
         }
     }
 
@@ -308,7 +331,7 @@ public class Main {
         return stftFile.getAbsolutePath();
     }
 
-    public static void createVectorList(Object[] fileInfo, int bins, int[] targetZone, String fourierOutputFolder, String vectorOutputFolder, String newFilePath, AtomicInteger timeMs) {
+    public static String createVectorList(Object[] fileInfo, int bins, int[] targetZone, String fourierOutputFolder, String vectorOutputFolder, String newFilePath, AtomicInteger timeMs) {
         // Get file name and path
         String fileName = (String) fileInfo[0];
         String filePath = (String) fileInfo[1];
@@ -333,7 +356,7 @@ public class Main {
         // If file already exists return
         if (vectorFile.exists()) {
             System.out.println("File already exists: " + vectorFileName);
-            return;
+            return null;
         }
 
         // Time start
@@ -346,7 +369,7 @@ public class Main {
             scanner = new Scanner(new File(newFilePath));
         } catch (FileNotFoundException e) {
             System.out.println("File not found: " + newFilePath);
-            return;
+            return null;
         }
         // Read the first line to get the number of columns
         String firstLine = scanner.nextLine();
@@ -380,7 +403,7 @@ public class Main {
             }
         } catch (FileNotFoundException e) {
             System.out.println("File not found: " + newFilePath);
-            return;
+            return null;
         } finally {
             if (scanner != null) {
                 scanner.close();
@@ -517,166 +540,120 @@ public class Main {
         // Time end
         long endTime = System.currentTimeMillis();
         timeMs.set((int)(endTime - startTime));
+
+        return vectorFile.getAbsolutePath();
     }
 
-    public static boolean equalPoints(int[] a, int[] b) {
-        return a[0] == b[0] && a[1] == b[1];
-    }
-
-    public static ArrayList<Object[]> compareVectors(String filePath) {
+    public static Object compareVectorsCount(String filePath, ArrayList<Object[]> databaseVectors) {
         // Read vectors from file
-        ArrayList<int[]> vectors = new ArrayList<>();
+        ArrayList<int[]> inputVectors = new ArrayList<>();
+
         try {
-            File file = new File(filePath
-            );
+            File file = new File(filePath);
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] parts = line.split(" ");
-                vectors.add(new int[]{
-                                        Integer.parseInt(parts[0]),
-                                        Integer.parseInt(parts[1]),
-                                        Integer.parseInt(parts[2]),
-                                        Integer.parseInt(parts[3])
-                                    });
+                inputVectors.add(new int[]{
+                    Integer.parseInt(parts[0]),
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3])
+                });
             }
             scanner.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        // Compare vectors to each file in vectorLists
-        File folder = new File("vectorLists");
-        File[] files = folder.listFiles();
+        // New object list for vectors found
+        ArrayList<Object[]> databaseVectorsFound = new ArrayList<>();
 
-        // Results list with information for name and vectors should be both int int and string as tuple
-        ArrayList<Object[]> results = new ArrayList<>();
+        // List of distinct songs
+        ArrayList<String> distinctSongs = new ArrayList<>();
 
-        for (File file : files) {
-            if (file.isFile()) {
-                ArrayList<int[]> vectors2 = new ArrayList<>();
-                try {
-                    Scanner scanner = new Scanner(file);
-                    while (scanner.hasNextLine()) {
-                        String line = scanner.nextLine();
-                        String[] parts = line.split(" ");
-                        vectors2.add(new int[]{
-                                                Integer.parseInt(parts[0]),
-                                                Integer.parseInt(parts[1]), 
-                                                Integer.parseInt(parts[2]),
-                                                Integer.parseInt(parts[3])
-                                            });
-                    }
-                    scanner.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                // List of vectors3
-                ArrayList<int[]> vectors3 = new ArrayList<>();
-
-                // Compare vectors
-                int count = 0;
-                for (int[] vector : vectors) {
-                    for (int[] vector2 : vectors2) {
-                        if (vector[0] == vector2[0] && vector[1] == vector2[1] && vector[2] == vector2[2]) {
-                            vectors3.add(vector2);
+        // Compare vectors to each file in vectors
+        for (int[] vector : inputVectors) {
+            // Binary search for the vector[0] placement in databaseVectors only checking [0]
+            int low = 0;
+            int high = databaseVectors.size() - 1;
+            int placement = -1;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                if ((int) databaseVectors.get(mid)[0] < vector[0]) {
+                    low = mid + 1;
+                } else if ((int) databaseVectors.get(mid)[0] > vector[0]) {
+                    high = mid - 1;
+                } else {
+                    // Now look for [1]
+                    if ((int) databaseVectors.get(mid)[1] < vector[1]) {
+                        low = mid + 1;
+                    } else if ((int) databaseVectors.get(mid)[1] > vector[1]) {
+                        high = mid - 1;
+                    } else {
+                        // Now look for [2]
+                        if ((int) databaseVectors.get(mid)[2] < vector[2]) {
+                            low = mid + 1;
+                        } else if ((int) databaseVectors.get(mid)[2] > vector[2]) {
+                            high = mid - 1;
+                        } else {
+                            placement = mid;
+                            break;
                         }
                     }
                 }
+            }
 
-                // Remove duplicates from vectors3
-                vectors3 = new ArrayList<>(vectors3.stream().distinct().collect(Collectors.toList()));
+            // Find first instance of [0] from the placement
+            if (placement != -1) {
+                while (placement > 0 && (int) databaseVectors.get(placement - 1)[2] == vector[2]) {
+                    placement--;
+                }
+            }
 
-                // Set count to number of distinct of vectors 3
-                count = vectors3.size();
-
-                // Linear count
-                int linearCount = 0;
-
-                // Sort vectors3 by offset
-                vectors3.sort((a, b) -> a[3] - b[3]);
-
-                // Sort vectors by offset
-                vectors.sort((a, b) -> a[3] - b[3]);
-
-                // Get smallest and largest offset of vectors
-                int smallestOffset = vectors.get(0)[3];
-                int largestOffset = vectors.get(vectors.size() - 1)[3];
-
-                // Get difference
-                int offsetDifference = largestOffset - smallestOffset;
-
-                // Divide by dividesize
-                int dividesize = 4;
-                int step = (int) offsetDifference / dividesize;
-
-                // array of vectors4
-                ArrayList<int[]> vectors4 = new ArrayList<>();
-
-                // Iterate over the vectors3 and count how many vectors are in each step with step size step
-                for (int i = 0; i <= vectors3.size() - step; i += step) {
-                    int stepCount = 0;
-                    for (int j = i; j <= i + step; j++) {
-                        for (int[] vector : vectors3) {
-                            if (vector[3] == j) {
-                                stepCount++;
-                            }
+            // If placement is not -1, add to databaseVectorsFound
+            if (placement != -1) {
+                // While [0] matches keep adding vectors to databaseVectorsFound
+                while (placement < databaseVectors.size() && vector[0] == (int) databaseVectors.get(placement)[0]) {
+                    // Check if vector[1] and vector[2] match
+                    if (vector[1] == (int) databaseVectors.get(placement)[1] && vector[2] == (int) databaseVectors.get(placement)[2]) {
+                        // Add to databaseVectorsFound
+                        databaseVectorsFound.add(databaseVectors.get(placement));
+                        if (!distinctSongs.contains((String) databaseVectors.get(placement)[4])) {
+                            distinctSongs.add((String) databaseVectors.get(placement)[4]);
                         }
                     }
-                    vectors4.add(new int[]{i, stepCount});
+                    placement++;
                 }
-
-                // Take 4 largest steps and plus and add to linearCount
-                vectors4.sort((a, b) -> b[1] - a[1]);
-                for (int i = 0; i < dividesize*2; i++) {
-                    // If vectors4 is not empty
-                    if (vectors4.size() > i) {
-                        linearCount += vectors4.get(i)[1];
-                    }
-                }
-
-                // Calculate percentage as int
-                int percentage = (int) (100.0 * count / vectors.size());
-
-                // File name as string:
-                String fileName = file.getName().substring(0, file.getName().length() - 11);
-
-                // Save information to results with name, count, size, percentage and linearCount
-                results.add(new Object[]{fileName, count, vectors2.size(), percentage, linearCount});
-
             }
         }
 
-        // Sort results from linearCount
-        results.sort((a, b) -> (int) b[4] - (int) a[4]);
+        // Remove duplicates from vectors3
+        databaseVectorsFound = new ArrayList<>(databaseVectorsFound.stream().distinct().collect(Collectors.toList()));
 
-        // // Sort results from percentage
-        // results.sort((a, b) -> (int) b[3] - (int) a[3]);
-
-        // // Sort results from count
-        // results.sort((a, b) -> (int) b[1] - (int) a[1]);
-
-        // Give percentage of how sure it is that the file is the  by first making list
-        ArrayList<Object[]> results2 = new ArrayList<>();
-
-        // Add all linearCount together
-        int linearCountTotal = 0;
-        for (Object[] result : results) {
-            linearCountTotal += (int) result[4];
+        // For each distinct song count how many vectors are in it
+        ArrayList<Object[]> results = new ArrayList<>();
+        for (String song : distinctSongs) {
+            // Count how many vectors are in the song
+            int count = 0;
+            // Array for found vectors to be used for more complex calculations
+            ArrayList<Object[]> foundVectors = new ArrayList<>();
+            for (Object[] dbVector : databaseVectorsFound) {
+                if (dbVector[4].equals(song)) {
+                    count++;
+                }
+            }
+            // Add to results
+            results.add(new Object[]{song, count});
         }
 
-        // Calculate percentage of linearCount for each file and add it as result[5]
-        for (Object[] result : results) {
-            int linearCount = (int) result[4];
-            int percentage = (int) (100.0 * linearCount / linearCountTotal);
-            results2.add(new Object[]{result[0], result[1], result[2], result[3], result[4], percentage});
-        }
+        // Sort results from count
+        results.sort((a, b) -> (int) b[1] - (int) a[1]);
 
-        return results2;
+        return results;
     }
 
-    public static Object compareVectorsv2(String filePath, ArrayList<Object[]> databaseVectors) {
+    public static Object compareVectorsLinear(String filePath, ArrayList<Object[]> databaseVectors) {
         // Read vectors from file
         ArrayList<int[]> inputVectors = new ArrayList<>();
 
@@ -886,19 +863,6 @@ public class Main {
         return databaseVectors;
     }
 
-    public static void compareResults(String[][] textFileNames, ArrayList<Object[]> databaseVectors, ArrayList<Object[]> results) {
-        // Compare vector files for each file in textFileNames
-        for (int i = 0; i < textFileNames.length; i++) {
-            // Print status
-            System.out.println("Processing " + textFileNames[i][0] + "...");
-            // Compare vectors and add to database with filename
-            Object comparisonResult = compareVectorsv2(textFileNames[i][1], databaseVectors);
-            // Pull out the filename and then count and then add to results with input filename
-            ArrayList<Object[]> comparisonResults = (ArrayList<Object[]>) comparisonResult;
-            results.add(new Object[]{textFileNames[i][0], comparisonResults});
-        }
-    }
-
     public static ArrayList<Object[]> printResults(ArrayList<Object[]> results) {
         // If results is empty say so
         if (results.isEmpty()) {
@@ -918,24 +882,66 @@ public class Main {
             // Now split file with _ and select the 2nd and 3rd part
             String[] fileNameParts2 = fileNameNew.split("_");
             String fileNameNew2 = fileNameParts2[1] + "_" + fileNameParts2[2];
-            // // Print input filename
-            // System.out.println("\nInput file: " + fileNameNew2 + "_" + fileNameParts2[3]);
-            // // Print results where each result gets 15 chars of length, so print song and count
-            // for (int i = 1; i < 6; i++) {
-            //     if (i < ((ArrayList<Object[]>) result[1]).size()) {
-            //         Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
-            //         String songName = (String) songResult[0];
-            //         int count = (int) songResult[1];
-            //         // Print song name and count
-            //         System.out.printf("%-22s Found vectors: %d", songName, count);
-            //         // If the fileNameNew2 match the song with the songname substring as long as the fileNameNew2, print "success"
-            //         if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
-            //             System.out.println(" - Correct");
-            //         } else {
-            //             System.out.println();
-            //         }
-            //     }
-            // }
+            // Print input filename
+            System.out.println("\nInput file: " + fileNameNew2 + "_" + fileNameParts2[3]);
+            // Print results where each result gets 15 chars of length, so print song and count
+            for (int i = 1; i < 6; i++) {
+                if (i < ((ArrayList<Object[]>) result[1]).size()) {
+                    Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
+                    String songName = (String) songResult[0];
+                    int count = (int) songResult[1];
+                    // Print song name and count
+                    System.out.printf("%-22s Found vectors: %d", songName, count);
+                    // If the fileNameNew2 match the song with the songname substring as long as the fileNameNew2, print "success"
+                    if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+                        System.out.println(" - Correct");
+                    } else {
+                        System.out.println();
+                    }
+                }
+            }
+
+            int songPos = 0;
+
+            // For each result in the results
+            for (int j = 1; j < ((ArrayList<Object[]>) result[1]).size(); j++) {
+                Object[] songResult = ((ArrayList<Object[]>) result[1]).get(j);
+                String songName = (String) songResult[0];
+                // If it's the correct song, add to resultsList save position
+                if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+                    songPos = j;
+                    break;
+                }
+            }
+
+            Object[] resultString = new Object[2];
+            resultString[0] = fileNameNew2 + "_" + fileNameParts2[3];
+            resultString[1] = songPos;
+            resultsList.add(resultString);
+        }
+
+        return resultsList;
+    }
+
+    public static ArrayList<Object[]> calculateResults(ArrayList<Object[]> results) {
+        // If results is empty say so
+        if (results.isEmpty()) {
+            System.out.println("No results found.");
+            return null;
+        }
+
+        // Create empty ArrayList for results
+        ArrayList<Object[]> resultsList = new ArrayList<>();
+
+        // Print results
+        for (Object[] result : results) {
+            String fileName = (String) result[0];
+            // Extract useful filename by first splitting String into /, selecting last part, deleting the snippetList_ from the start
+            String[] fileNameParts = fileName.split("/");
+            String fileNameNew = fileNameParts[fileNameParts.length - 1];
+            // Now split file with _ and select the 2nd and 3rd part
+            String[] fileNameParts2 = fileNameNew.split("_");
+            String fileNameNew2 = fileNameParts2[1] + "_" + fileNameParts2[2];
 
             int songPos = 0;
 
@@ -1007,12 +1013,12 @@ public class Main {
 
         // Ready time
         AtomicInteger timeMs = new AtomicInteger(0);
-        String newFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder, timeMs);
+        String fftFilePath = createFourierTransform(fileInfo, fourierQuality, windowSize, overlap, freqRange, fourierOutputFolder, timeMs);
         // Print time
         // System.out.println("Time: " + timeMs.get() + " ms");
         if (timeMs.get() > 0) {
             // Get file size
-            File file = new File(newFilePath);
+            File file = new File(fftFilePath);
             long fileSizeFFT = file.length();
             // Get song time
             audioSample a = new audioSample();
@@ -1026,13 +1032,13 @@ public class Main {
         }
 
         // // Create image of spectrum
-        // TextSpectrumToImage.FileToImage(newFilePath);
+        // TextSpectrumToImage.FileToImage(fftFilePath);
         
         timeMs.set(0);
-        createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, newFilePath, timeMs);
+        String vectorFilePath = createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, fftFilePath, timeMs);
         if (timeMs.get() > 0) {
             // Get file size
-            File file = new File(newFilePath);
+            File file = new File(vectorFilePath);
             long fileSizeVec = file.length();
             // Get song time
             audioSample a = new audioSample();
@@ -1044,7 +1050,6 @@ public class Main {
             // add to addToInfoFile
             addInfoTextFile(settings, iii, inputType, 0, 0, 0, 0, (int) timeMs.get(), (int) songTimeVec, (int) fileSizeVec, numberOfSongsVec);
         }
-
     }
 
     public static void addToSettings(ArrayList<Object[]> settings, int[] fourierQualityList, int[] windowSizeList, int[] overlapList, double[] minFreqList, double[] maxFreqList, int[] binsList, int[] targetHeightList, int[] targetLengthList, int[] lengthToTargetList) {
@@ -1471,10 +1476,11 @@ public class Main {
         System.out.printf("Vector file size per minute of audio: %.2f KB/min%n", fileSizeVecPerMinuteKB);
 
         // Print total length of audio and vector
-        System.out.println("Total length of audio: " + (songTimeFFTSeconds / 60) + " minutes");
-        // Print total file size in mb
-        System.out.println("Total file size of FFT: " + (fileSizeFFTCur / 1024.0 / 1024.0) + " MB");
-        System.out.println("Total file size of vector: UNKNOWN MB");
+        System.out.printf("Total length of audio: %.2f minutes%n", (songTimeFFTSeconds / 60));
+
+        // Print total file size in MB
+        System.out.printf("Total file size of FFT: %.2f MB%n", (fileSizeFFTCur / 1024.0 / 1024.0));
+        System.out.printf("Total file size of vector: %.2f MB%n", (fileSizeVecCur / 1024.0 / 1024.0));
 
     }
 }
