@@ -247,7 +247,11 @@ public class Main {
             int kinda = (int) result[3];
             int failures = (int) result[4];
 
-            System.out.println("File: " + filePath[2] + " Success rate: " + successRate + "%");
+            // If success rate is over 60, print
+            if (successRate > 68) {
+                System.out.println("File: " + filePath[2] + " Success rate: " + successRate + "%");
+                readInfoTextFileFromLocation(filePath, SONG);
+            }
         }
     }
 
