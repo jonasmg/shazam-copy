@@ -53,7 +53,7 @@ public class ShortTimeFourierTransform {
             }
 
             // Perform FFT
-            Complex[] fftResult = computeFFTv3(window, sampleRate, minFreq, maxFreq, desiredFrequencyBins);
+            Complex[] fftResult = computeFFT(window, sampleRate, minFreq, maxFreq, desiredFrequencyBins);
             
             // Calculate magnitude and store in spectrogram
             for (int i = 0; i < desiredFrequencyBins; i++) {
@@ -119,52 +119,7 @@ public class ShortTimeFourierTransform {
         return filteredResult;
     }
 
-    public static Complex[] computeFFTv2(Complex[] x, double sampleRate, double minFreq, double maxFreq, int desiredFrequencyBins) {
-        // Number of samples
-        int N = x.length;
-
-        // Execute at end
-        if (N <= 1) { return x; }
-
-        // Split into even and odd parts
-        int m = N / 2;
-
-        // Declare even and odd complex arrays
-        Complex[] even = new Complex[m];
-        Complex[] odd = new Complex[m];
-
-        // Input even and odd samples into respective arrays
-        for (int i = 0; i < m; i++) {
-            even[i] = x[i * 2];
-            odd[i] = x[i * 2 + 1];
-        }
-
-        // Recursive FFT on even and odd parts
-        Complex[] fftEven = computeFFTv2(even, sampleRate, minFreq, maxFreq, desiredFrequencyBins);
-        Complex[] fftOdd = computeFFTv2(odd, sampleRate, minFreq, maxFreq, desiredFrequencyBins);
-
-        // Combine values again with control over bins
-        Complex[] freqBins = new Complex[desiredFrequencyBins];
-        double frequencyResolution = (maxFreq - minFreq) / desiredFrequencyBins;
-
-        for (int i = 0; i < desiredFrequencyBins; i++) {
-            double targetFreq = minFreq + i * frequencyResolution;
-            int k = (int) Math.round(targetFreq * N / sampleRate);
-
-            if (k < fftEven.length && k < fftOdd.length) {
-                double t = -2 * Math.PI * k / N;
-                Complex exp = new Complex(Math.cos(t), Math.sin(t));
-                freqBins[i] = fftEven[k].add(exp.multiply(fftOdd[k]));
-            } else {
-                freqBins[i] = new Complex(0, 0); // Zero out bins outside range
-            }
-        }
-
-        // Return the frequency bins
-        return freqBins;
-    }
-
-    public static Complex[] computeFFTv3(Complex[] x, double sampleRate, double minFreq, double maxFreq, int desiredFrequencyBins) {
+    public static Complex[] computeFFT(Complex[] x, double sampleRate, double minFreq, double maxFreq, int desiredFrequencyBins) {
         // Calculate required FFT size N so frequency resolution can support desired bins
         double frequencyResolution = (maxFreq - minFreq) / desiredFrequencyBins;
         int requiredN = (int) Math.ceil(sampleRate / frequencyResolution);
@@ -228,46 +183,6 @@ public class ShortTimeFourierTransform {
         return combined;
     }
     
-
-    public static Complex[] computeFFT(Complex[] x) {
-        int N = x.length;
-        if (N <= 1) {
-            return new Complex[]{(x.length > 0 && x[0] != null) ? x[0] : new Complex(0, 0)};
-        }
-    
-        // Ensure valid arrays
-        Complex[] even = new Complex[N / 2];
-        Complex[] odd = new Complex[N / 2];
-    
-        for (int i = 0; i < N / 2; i++) {
-            even[i] = (x[i * 2] != null) ? x[i * 2] : new Complex(0, 0);
-            odd[i] = (x[i * 2 + 1] != null) ? x[i * 2 + 1] : new Complex(0, 0);
-        }
-    
-        Complex[] fftEven = computeFFT(even);
-        Complex[] fftOdd = computeFFT(odd);
-    
-        // Ensure fftEven and fftOdd never have null values
-        for (int i = 0; i < fftEven.length; i++) {
-            if (fftEven[i] == null) {
-                fftEven[i] = new Complex(0, 0);
-            }
-        }
-        for (int i = 0; i < fftOdd.length; i++) {
-            if (fftOdd[i] == null) {
-                fftOdd[i] = new Complex(0, 0);
-            }
-        }
-    
-        Complex[] result = new Complex[N];
-        for (int k = 0; k < N / 2; k++) {
-            Complex t = Complex.exp(-2 * Math.PI * k / N).multiply(fftOdd[k]);
-            result[k] = fftEven[k].add(t);
-            result[k + N / 2] = fftEven[k].subtract(t);
-        }
-        return result;
-    }
-
     static class Complex {
         private final double re;
         private final double im;
