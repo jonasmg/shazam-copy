@@ -30,4 +30,4 @@ Is the main folder for the snippets. Right now it holds all the calculated snipp
 You can rename the folder to something else and calculate the "snippetListQuality" which holds mobile phone recordings!
 Just change the folder used for clips in the main file!
 
-Or you can look at the "snippetListQualityFullOutput.txt" where I saved the output of all it prints with the current settings.
+Or you can look at the "snippetListQualityFullOutput.txt" in the "ResultsFolder", where I saved the output of all it prints with the current settings.
