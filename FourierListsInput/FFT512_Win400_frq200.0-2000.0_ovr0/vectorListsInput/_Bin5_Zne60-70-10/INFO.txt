@@ -1,4 +1,0 @@
-calcTimeVec_246
-songTimeVec_342148
-fileSizeVec_214972
-numberOfSongsVec_16

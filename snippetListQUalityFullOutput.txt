@@ -1,0 +1,272 @@
+vscode ➜ /workspaces/shazam-copy (main) $  /usr/bin/env /usr/lib/jvm/msopenjdk-current/bin/java -XX:+ShowCodeDetailsInExceptionMessages -cp /home/vscode/.vscode-server/data/User/workspaceStorage/7fa65139584fb099d6c732cd514704a1/redhat.java/jdt_ws/shazam-copy_cc878c46/bin Main 
+File: Coldplay - Viva La Vida_Track 9_cut1mobile.wav Path: snippetListQuality/Coldplay - Viva La Vida_Track 9_cut1mobile.wav Genres: snippet
+File: Dan Croll - Sweet Disarray_Track 8_cut1mobile.wav Path: snippetListQuality/Dan Croll - Sweet Disarray_Track 8_cut1mobile.wav Genres: snippet
+File: hits for kids - vol 28_Track 2_cut1mobile.wav Path: snippetListQuality/hits for kids - vol 28_Track 2_cut1mobile.wav Genres: snippet
+File: Rachmaninoff - Symphony no 1_Track 2_cut1mobile.wav Path: snippetListQuality/Rachmaninoff - Symphony no 1_Track 2_cut1mobile.wav Genres: snippet
+File: SSX - Music To Grind To_Track 6_cut1mobile.wav Path: snippetListQuality/SSX - Music To Grind To_Track 6_cut1mobile.wav Genres: snippet
+File: TV2 - Beat_Track 7_cut1mobile.wav Path: snippetListQuality/TV2 - Beat_Track 7_cut1mobile.wav Genres: snippet
+File: Coldplay - a rush of blood to the head_Track 2_cut1mobile.wav Path: snippetListQuality/Coldplay - a rush of blood to the head_Track 2_cut1mobile.wav Genres: snippet
+File: Daft Punk - Random Access Memory disc 1_Track 5_cut1mobile.wav Path: snippetListQuality/Daft Punk - Random Access Memory disc 1_Track 5_cut1mobile.wav Genres: snippet
+File: Nirvana - Nevermind_Track 1_cut1mobile.wav Path: snippetListQuality/Nirvana - Nevermind_Track 1_cut1mobile.wav Genres: snippet
+File: Pink Floyd - The Wall disc1_Track 5_cut1mobile.wav Path: snippetListQuality/Pink Floyd - The Wall disc1_Track 5_cut1mobile.wav Genres: snippet
+Created folder: FourierListsInput
+Created folder: FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Created file: /workspaces/shazam-copy/FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/INFO.txt
+Created folder: FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Created file: /workspaces/shazam-copy/FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/INFO.txt
+Processing file: snippetListQuality/Coldplay - Viva La Vida_Track 9_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1034880
+Audio length: 21.56 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1034880 mono samples from snippetListQuality/Coldplay - Viva La Vida_Track 9_cut1mobile.wav
+Number of samples: 1034880
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/Dan Croll - Sweet Disarray_Track 8_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 961920
+Audio length: 20.04 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 961920 mono samples from snippetListQuality/Dan Croll - Sweet Disarray_Track 8_cut1mobile.wav
+Number of samples: 961920
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/hits for kids - vol 28_Track 2_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1013760
+Audio length: 21.12 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1013760 mono samples from snippetListQuality/hits for kids - vol 28_Track 2_cut1mobile.wav
+Number of samples: 1013760
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/Rachmaninoff - Symphony no 1_Track 2_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1034880
+Audio length: 21.56 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1034880 mono samples from snippetListQuality/Rachmaninoff - Symphony no 1_Track 2_cut1mobile.wav
+Number of samples: 1034880
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/SSX - Music To Grind To_Track 6_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 983040
+Audio length: 20.48 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 983040 mono samples from snippetListQuality/SSX - Music To Grind To_Track 6_cut1mobile.wav
+Number of samples: 983040
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/TV2 - Beat_Track 7_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1058432
+Audio length: 22.05 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1058432 mono samples from snippetListQuality/TV2 - Beat_Track 7_cut1mobile.wav
+Number of samples: 1058432
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/Coldplay - a rush of blood to the head_Track 2_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 941312
+Audio length: 19.61 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 941312 mono samples from snippetListQuality/Coldplay - a rush of blood to the head_Track 2_cut1mobile.wav
+Number of samples: 941312
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/Daft Punk - Random Access Memory disc 1_Track 5_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1056960
+Audio length: 22.02 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1056960 mono samples from snippetListQuality/Daft Punk - Random Access Memory disc 1_Track 5_cut1mobile.wav
+Number of samples: 1056960
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/Nirvana - Nevermind_Track 1_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1017152
+Audio length: 21.19 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1017152 mono samples from snippetListQuality/Nirvana - Nevermind_Track 1_cut1mobile.wav
+Number of samples: 1017152
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Processing file: snippetListQuality/Pink Floyd - The Wall disc1_Track 5_cut1mobile.wav Quality: 700 WindowSize: 350
+Number of frames: 1016640
+Audio length: 21.18 seconds
+Audio Format: PCM_SIGNED 48000.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian
+isBigEndian: false
+Extracted 1016640 mono samples from snippetListQuality/Pink Floyd - The Wall disc1_Track 5_cut1mobile.wav
+Number of samples: 1016640
+SampleRate: 48000
+STFT calculated!
+STFT file created!
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list...
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/
+Added to INFO.txt file in FourierListsInput/FFT700_Win350_frq200.0-2000.0_ovr0/vectorListsInput/_Bin4_Zne120-40-4/
+Creating vector list for: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-40-4...
+Calculating results forFFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-40-4...
+
+Input file: Daft Punk - Random Access Memory disc 1_Track 5_cut1mobile.wav
+No genres found.
+Daft Punk - Random Access Memory disc 1_Track 5.wav_stft.txt_vectors.txt Found vectors: 24 - Correct
+Frederic Chopin - Klavierkonzert no2_Track 4.wav_stft.txt_vectors.txt Found vectors: 11
+Porter Robinson - Smile_Track 10.wav_stft.txt_vectors.txt Found vectors: 9
+Pink Floyd - The Wall disc2_Track 2.wav_stft.txt_vectors.txt Found vectors: 9
+Coldplay - a rush of blood to the head_Track 3.wav_stft.txt_vectors.txt Found vectors: 8
+Frederic Chopin - Klavierkonzert no2_Track 1.wav_stft.txt_vectors.txt Found vectors: 7
+
+Input file: hits for kids - vol 28_Track 2_cut1mobile.wav
+No genres found.
+hits for kids - vol 28_Track 2.wav_stft.txt_vectors.txt Found vectors: 17 - Correct
+Coldplay - Viva La Vida_Track 3.wav_stft.txt_vectors.txt Found vectors: 14
+Rachmaninoff - Symphony no 1_Track 3.wav_stft.txt_vectors.txt Found vectors: 12
+Frederic Chopin - Classics_Track 9.wav_stft.txt_vectors.txt Found vectors: 9
+Rachmaninoff - Symphony no 1_Track 1.wav_stft.txt_vectors.txt Found vectors: 9
+Daft Punk - Random Access Memory disc 2_Track 3.wav_stft.txt_vectors.txt Found vectors: 7
+
+Input file: Nirvana - Nevermind_Track 1_cut1mobile.wav
+No genres found.
+Nirvana - Nevermind_Track 1.wav_stft.txt_vectors.txt Found vectors: 15 - Correct
+Pink Floyd - The Wall disc2_Track 3.wav_stft.txt_vectors.txt Found vectors: 9
+Coldplay - Viva La Vida_Track 6.wav_stft.txt_vectors.txt Found vectors: 8
+Nirvana - Nevermind_Track 12.wav_stft.txt_vectors.txt Found vectors: 8
+Nirvana - Nevermind_Track 5.wav_stft.txt_vectors.txt Found vectors: 7
+Frederic Chopin - Classics_Track 9.wav_stft.txt_vectors.txt Found vectors: 5
+
+Input file: Dan Croll - Sweet Disarray_Track 8_cut1mobile.wav
+No genres found.
+Dan Croll - Sweet Disarray_Track 8.wav_stft.txt_vectors.txt Found vectors: 15 - Correct
+Coldplay - Viva La Vida_Track 6.wav_stft.txt_vectors.txt Found vectors: 5
+Pink Floyd - The Wall disc2_Track 3.wav_stft.txt_vectors.txt Found vectors: 5
+Frederic Chopin - Klavierkonzert no2_Track 1.wav_stft.txt_vectors.txt Found vectors: 5
+Nirvana - Nevermind_Track 12.wav_stft.txt_vectors.txt Found vectors: 5
+Frederic Chopin - Classics_Track 6.wav_stft.txt_vectors.txt Found vectors: 4
+
+Input file: Coldplay - Viva La Vida_Track 9_cut1mobile.wav
+No genres found.
+Coldplay - a rush of blood to the head_Track 2.wav_stft.txt_vectors.txt Found vectors: 12
+Nirvana - Nevermind_Track 12.wav_stft.txt_vectors.txt Found vectors: 9
+Pink Floyd - The Wall disc2_Track 3.wav_stft.txt_vectors.txt Found vectors: 9
+Nirvana - Nevermind_Track 5.wav_stft.txt_vectors.txt Found vectors: 9
+Coldplay - Viva La Vida_Track 6.wav_stft.txt_vectors.txt Found vectors: 8
+TV2 - Beat_Track 7.wav_stft.txt_vectors.txt Found vectors: 8
+
+Input file: Coldplay - a rush of blood to the head_Track 2_cut1mobile.wav
+No genres found.
+Nirvana - Nevermind_Track 12.wav_stft.txt_vectors.txt Found vectors: 8
+Coldplay - a rush of blood to the head_Track 6.wav_stft.txt_vectors.txt Found vectors: 6
+SSX - Music To Grind To_Track 2.wav_stft.txt_vectors.txt Found vectors: 6
+Nirvana - Nevermind_Track 5.wav_stft.txt_vectors.txt Found vectors: 5
+SSX - Music To Grind To_Track 1.wav_stft.txt_vectors.txt Found vectors: 5
+Frederic Chopin - Klavierkonzert no2_Track 1.wav_stft.txt_vectors.txt Found vectors: 4
+
+Input file: TV2 - Beat_Track 7_cut1mobile.wav
+No genres found.
+TV2 - Beat_Track 7.wav_stft.txt_vectors.txt Found vectors: 13 - Correct
+Frederic Chopin - Classics_Track 4.wav_stft.txt_vectors.txt Found vectors: 8
+Dan Croll - Sweet Disarray_Track 6.wav_stft.txt_vectors.txt Found vectors: 7
+Daft Punk - Random Access Memory disc 1_Track 4.wav_stft.txt_vectors.txt Found vectors: 7
+Coldplay - Viva La Vida_Track 6.wav_stft.txt_vectors.txt Found vectors: 5
+Nirvana - Nevermind_Track 1.wav_stft.txt_vectors.txt Found vectors: 5
+
+Input file: SSX - Music To Grind To_Track 6_cut1mobile.wav
+No genres found.
+SSX - Music To Grind To_Track 6.wav_stft.txt_vectors.txt Found vectors: 32 - Correct
+Coldplay - a rush of blood to the head_Track 1.wav_stft.txt_vectors.txt Found vectors: 14
+SSX - Music To Grind To_Track 2.wav_stft.txt_vectors.txt Found vectors: 9
+Pink Floyd - The Wall disc1_Track 8.wav_stft.txt_vectors.txt Found vectors: 8
+Nirvana - Nevermind_Track 12.wav_stft.txt_vectors.txt Found vectors: 7
+Pink Floyd - The Wall disc2_Track 3.wav_stft.txt_vectors.txt Found vectors: 5
+
+Input file: Pink Floyd - The Wall disc1_Track 5_cut1mobile.wav
+No genres found.
+Frederic Chopin - Classics_Track 9.wav_stft.txt_vectors.txt Found vectors: 9
+Rachmaninoff - Symphony no 1_Track 3.wav_stft.txt_vectors.txt Found vectors: 8
+Coldplay - Viva La Vida_Track 3.wav_stft.txt_vectors.txt Found vectors: 8
+Rachmaninoff - Symphony no 1_Track 1.wav_stft.txt_vectors.txt Found vectors: 7
+Harald Haugaard og Helene Blum - Strømmen_Track 2.wav_stft.txt_vectors.txt Found vectors: 7
+Coldplay - Viva La Vida_Track 5.wav_stft.txt_vectors.txt Found vectors: 6
+
+Input file: Rachmaninoff - Symphony no 1_Track 2_cut1mobile.wav
+No genres found.
+Rachmaninoff - Symphony no 1_Track 2.wav_stft.txt_vectors.txt Found vectors: 23 - Correct
+Rachmaninoff - Symphony no 1_Track 1.wav_stft.txt_vectors.txt Found vectors: 10
+Frederic Chopin - Classics_Track 7.wav_stft.txt_vectors.txt Found vectors: 7
+Rachmaninoff - Symphony no 1_Track 4.wav_stft.txt_vectors.txt Found vectors: 7
+Rachmaninoff - Symphony no 1_Track 3.wav_stft.txt_vectors.txt Found vectors: 6
+Coldplay - Viva La Vida_Track 6.wav_stft.txt_vectors.txt Found vectors: 5
+
+Final summary results:
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-40-4 Success rate: 70.0%
+Successes: 7
+Kinda: 0
+Failures: 3
+Time avg: 680.5ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 209.54 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 171.63 MB

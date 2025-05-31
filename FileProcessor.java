@@ -30,6 +30,11 @@ public class FileProcessor {
         // Get all folders from rootFolder and put into list
         File[] listOfFoldersInRoot = rootFolder.listFiles();
         List<File> listOfGenreFolders = new ArrayList<>();
+        // If file is not empty
+        if (listOfFoldersInRoot == null || listOfFoldersInRoot.length == 0) {
+            return new ArrayList<>(); // Return empty list if no folders found
+        }
+        
         for (File folder : listOfFoldersInRoot) {
             if (folder.isDirectory()) {
                 listOfGenreFolders.add(folder);

@@ -1,4 +1,0 @@
-calcTimeFFT_68435
-songTimeFFT_2265917
-fileSizeFFT_12441949
-numberOfSongsFFT_11

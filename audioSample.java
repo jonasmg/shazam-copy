@@ -13,7 +13,6 @@ public class audioSample {
     private String filePath = "audio/output.wav";
     private File file = new File(filePath);
     private int numSamples = 8000;
-    private int stepSize = 1;
     private int[] samples = new int[0];
 
     public int[] getSamples() {
@@ -39,10 +38,6 @@ public class audioSample {
 
     public void setNumSamples(int numSamples) {
         this.numSamples = numSamples;
-    }
-
-    public void setStepSize(int stepSize) {
-        this.stepSize = stepSize;
     }
 
     public void setFile(String filePath) {
@@ -73,7 +68,7 @@ public class audioSample {
             // Read bytes per frame from file
             int bytesPerFrame = format.getFrameSize();
             if (bytesPerFrame == 4) {
-                for (int i = 0; i < bytes.length / 4; i += stepSize) { // 4 bytes per frame (2 channels)
+                for (int i = 0; i < bytes.length / 4; i += 1) { // 4 bytes per frame (2 channels)
                     if (extractedSamples >= numSamples) break;
         
                     // Extract the left channel (first 2 bytes of the frame)
@@ -85,7 +80,7 @@ public class audioSample {
                     extractedSamples++;
                 }
             } else if (bytesPerFrame == 2) {
-                for (int i = 0; i < bytes.length / 2; i += stepSize) { // 2 bytes per frame (1 channel)
+                for (int i = 0; i < bytes.length / 2; i += 1) { // 2 bytes per frame (1 channel)
                     if (extractedSamples >= numSamples) break;
         
                     // Extract the left channel (first 2 bytes of the frame)
@@ -112,6 +107,71 @@ public class audioSample {
         }
     }
 
+    public void computeSamplesStereo() {
+        try (AudioInputStream audioStream = AudioSystem.getAudioInputStream(file)) {
+            AudioFormat format = audioStream.getFormat();
+            System.out.println("Audio Format: " + format);
+    
+            int channels = format.getChannels();
+            int bytesPerFrame = format.getFrameSize();
+            int sampleSizeInBits = format.getSampleSizeInBits();
+            boolean isBigEndian = format.isBigEndian();
+
+            // Print isBigEndian
+            System.out.println("isBigEndian: " + isBigEndian);
+    
+            if (sampleSizeInBits % 8 != 0) {
+                System.out.println("Unsupported sample size: " + sampleSizeInBits);
+                return;
+            }
+    
+            int bytesPerSample = sampleSizeInBits / 8;
+            byte[] bytes = new byte[(int) (audioStream.getFrameLength() * bytesPerFrame)];
+            audioStream.read(bytes);
+    
+            samples = new int[numSamples];
+            int extractedSamples = 0;
+    
+            for (int i = 0; i < bytes.length / bytesPerFrame; i += 1) {
+                if (extractedSamples >= numSamples) break;
+    
+                int frameStart = i * bytesPerFrame;
+                int sampleSum = 0;
+    
+                for (int ch = 0; ch < Math.min(channels, 2); ch++) {
+                    int sampleStart = frameStart + ch * bytesPerSample;
+                    int sample = 0;
+    
+                    if (isBigEndian) {
+                        for (int b = 0; b < bytesPerSample; b++) {
+                            sample = (sample << 8) | (bytes[sampleStart + b] & 0xFF);
+                        }
+                    } else {
+                        for (int b = bytesPerSample - 1; b >= 0; b--) {
+                            sample = (sample << 8) | (bytes[sampleStart + b] & 0xFF);
+                        }
+                    }
+    
+                    // Sign extend for samples smaller than 32 bits
+                    int shift = 32 - sampleSizeInBits;
+                    sample = (sample << shift) >> shift;
+    
+                    sampleSum += sample;
+                }
+    
+                int averageSample = sampleSum / Math.min(channels, 2); // Average if stereo, just value if mono
+                samples[extractedSamples++] = averageSample;
+            }
+    
+            System.out.println("Extracted " + extractedSamples + " mono samples from " + filePath);
+    
+        } catch (UnsupportedAudioFileException e) {
+            System.out.println("Audio file is not supported");
+        } catch (IOException e) {
+            System.out.println("Something went wrong while reading the file");
+        }
+    }
+
     // Print samples method
     public void printSamples() {
         for (int i = 0; i < samples.length; i++) {
@@ -125,7 +185,6 @@ public class audioSample {
             int numFrames = (int) audioStream.getFrameLength();
             System.out.println("Number of frames: " + numFrames);
             return numFrames;
-
         }
         catch(UnsupportedAudioFileException e){
             System.out.println("Audio file is not supported");

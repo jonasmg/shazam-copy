@@ -1,0 +1,192 @@
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-50-4 Success rate: 80.0%
+Successes: 80
+Kinda: 3
+Failures: 17
+Time avg: 996.05ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 258.92 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 212.07 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne150-60-4 Success rate: 80.0%
+Successes: 80
+Kinda: 3
+Failures: 17
+Time avg: 1505.2ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 361.59 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 296.17 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne150-50-4 Success rate: 80.0%
+Successes: 80
+Kinda: 3
+Failures: 17
+Time avg: 1328.44ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 304.53 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 249.43 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-40-4 Success rate: 80.0%
+Successes: 80
+Kinda: 2
+Failures: 18
+Time avg: 709.94ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 209.54 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 171.63 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-60-4 Success rate: 80.0%
+Successes: 80
+Kinda: 3
+Failures: 17
+Time avg: 1072.76ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 307.12 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 251.55 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne120-30-4 Success rate: 79.0%
+Successes: 79
+Kinda: 2
+Failures: 19
+Time avg: 473.34ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 158.79 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 130.06 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne180-60-4 Success rate: 79.0%
+Successes: 79
+Kinda: 3
+Failures: 18
+Time avg: 2187.58ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 413.49 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 338.67 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne200-50-4 Success rate: 79.0%
+Successes: 79
+Kinda: 3
+Failures: 18
+Time avg: 2035.33ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 375.01 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 307.16 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne150-40-4 Success rate: 79.0%
+Successes: 79
+Kinda: 2
+Failures: 19
+Time avg: 957.52ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 246.19 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 201.65 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne180-40-4 Success rate: 79.0%
+Successes: 79
+Kinda: 2
+Failures: 19
+Time avg: 1267.46ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 281.23 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 230.35 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne200-60-4 Success rate: 79.0%
+Successes: 79
+Kinda: 3
+Failures: 18
+Time avg: 2370.38ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.09 sec/min
+Vector file size per minute of audio: 445.53 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 364.92 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne200-40-4 Success rate: 79.0%
+Successes: 79
+Kinda: 2
+Failures: 19
+Time avg: 1375.08ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 302.93 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 248.12 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne180-50-4 Success rate: 79.0%
+Successes: 79
+Kinda: 3
+Failures: 18
+Time avg: 1587.12ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.08 sec/min
+Vector file size per minute of audio: 348.10 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 285.12 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne180-30-4 Success rate: 78.0%
+Successes: 78
+Kinda: 3
+Failures: 19
+Time avg: 703.97ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 212.82 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 174.31 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne150-30-4 Success rate: 78.0%
+Successes: 78
+Kinda: 2
+Failures: 20
+Time avg: 570.33ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 186.39 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 152.66 MB
+File: FFT700_Win350_frq200.0-2000.0_ovr0_Bin4_Zne200-30-4 Success rate: 78.0%
+Successes: 78
+Kinda: 2
+Failures: 20
+Time avg: 806.09ms
+FFT calculation time per minute of audio: 1.99 sec/min
+FFT file size per minute of audio: 318.97 KB/min
+Vector calculation time per minute of audio: 0.07 sec/min
+Vector file size per minute of audio: 229.15 KB/min
+Total length of audio: 838.73 minutes
+Total file size of FFT: 261.26 MB
+Total file size of vector: 187.69 MB

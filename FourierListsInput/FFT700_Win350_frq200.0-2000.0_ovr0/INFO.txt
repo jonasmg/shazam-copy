@@ -1,0 +1,4 @@
+calcTimeFFT_70009
+songTimeFFT_1960000
+fileSizeFFT_12371371
+numberOfSongsFFT_98

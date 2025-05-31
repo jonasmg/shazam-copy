@@ -15,6 +15,7 @@ public class Main {
     public static final String[] SNIPPET = {"FourierListsInput", "vectorListsInput"};
     public static final String BLACKLIST = "INFO.txt";
     
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         // First is fileName, second is path, third is genreTouple
         List<Object[]> fileNames = new ArrayList<>();
@@ -22,22 +23,22 @@ public class Main {
 
         // Get files of audio and snippets
         fileNames = FileProcessor.getFiles2("songList");
-        snippetNames = FileProcessor.getSnippetFileNames("snippetList");
+        snippetNames = FileProcessor.getSnippetFileNames("snippetListGenerated20");
 
         // Print filenames
         printFileNames(fileNames);
         printFileNames(snippetNames);
 
-        int[] fourierQalityList = {768};
-        int[] windowSizeList = {300};
+        int[] fourierQalityList = {700};
+        int[] windowSizeList = {350};
         int[] overlapList = {0};
-        double[] minFreqList = {200.0};
+        double[] minFreqList = {200};
         double[] maxFreqList = {2000.0};
 
-        int[] binsList = {0};
-        int[] targetHeightList = {50};
-        int[] targetLengthList = {50};
-        int[] lengthToTargetList = {10};
+        int[] binsList = {4};
+        int[] targetHeightList = {120};
+        int[] targetLengthList = {40};
+        int[] lengthToTargetList = {4};
 
         // Create arraylist object[] for all settings
         ArrayList<Object[]> settings = new ArrayList<>();
@@ -101,6 +102,9 @@ public class Main {
 
                 // Create arraylist for summary results
                 ArrayList<Object[]> summaryResults = new ArrayList<>();
+
+                // Print summary results
+                System.out.println("Creating vector list for: " + folder + folderName + "...");
 
                 // For each file in the folder, write to the database
                 for (File file : files) {
@@ -179,7 +183,7 @@ public class Main {
 
                     // Time start normal long int
                     long startTime = System.currentTimeMillis();
-                    Object comparisonResult = compareVectorsCount(snippetFilePath, databaseVectors);
+                    Object comparisonResult = compareVectorsSmart(snippetFilePath, databaseVectors);
                     long endTime = System.currentTimeMillis();
                     timeAll += (endTime - startTime);
 
@@ -192,8 +196,49 @@ public class Main {
                 double timeAvg = (double) timeAll / snippetVectorFilesList.size();
 
                 // Print results
-                summaryResults = calculateResults(results);
-                
+                summaryResults = printResults(results);
+
+                ArrayList<Object[]> genreStats = new ArrayList<>();
+
+                for (Object[] result : summaryResults) {
+                    int songPos = (int) result[1];
+                    String[] genres = (String[]) result[2];
+
+                    for (String genre : genres) {
+                        boolean found = false;
+
+                        // Check if genre already exists
+                        for (Object[] stat : genreStats) {
+                            if (stat[0].equals(genre)) {
+                                if (songPos == 0) {
+                                    stat[1] = (int) stat[1] + 1; // success
+                                } else {
+                                    stat[2] = (int) stat[2] + 1; // fail
+                                }
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        // If genre not found, add a new entry with success/fail counts
+                        if (!found) {
+                            int success = 0;
+                            int fail = 0;
+
+                            if (songPos == 0) {
+                                success = 1;
+                            } else {
+                                fail = 1;
+                            }
+                            genreStats.add(new Object[] { genre, success, fail });
+                        }
+
+                    }
+                }
+
+                // Sort genreStats by most successes
+                genreStats.sort((a, b) -> (int) b[1] - (int) a[1]);
+
                 // Count successes and failures
                 int successes = 0;
                 int kinda = 0;
@@ -201,12 +246,12 @@ public class Main {
                 for (Object[] summaryResult : summaryResults) {
                     if ((int) summaryResult[1] == 0) {
                     successes++;
-                    } else if ((int) summaryResult[1] == 1 || (int) summaryResult[1] == 2) {
-                        kinda++;
-                    } else {
-                        failures++;
-                    }
+                } else if ((int) summaryResult[1] >= 1 && (int) summaryResult[1] <= 6) {
+                    kinda++;
+                } else {
+                    failures++;
                 }
+            }
 
                 // Calculate success rate
                 double successRate = (double) successes / (successes + kinda + failures) * 100;
@@ -218,7 +263,7 @@ public class Main {
                 filePath[2] = folder + folderName;
 
                 // Add to final summary results
-                finalSummaryResults.add(new Object[]{filePath, successRate, successes, kinda, failures, timeAvg});
+                finalSummaryResults.add(new Object[]{filePath, successRate, successes, kinda, failures, timeAvg, genreStats});
             }
         }
 
@@ -230,13 +275,26 @@ public class Main {
         for (Object[] result : finalSummaryResults) {
             String[] filePath = (String[]) result[0];
             double successRate = (double) result[1];
+            int successes = (int) result[2];
+            int kinda = (int) result[3];
+            int failures = (int) result[4];
+            double timeAvg = (double) result[5];
+            ArrayList<Object[]> genreStats = (ArrayList<Object[]>) result[6];
 
-            System.out.println("File: " + filePath[2] + " Success rate: " + successRate + "%");
-            // If one of the first 10, print extra info
-            if (finalSummaryResults.indexOf(result) < 10) {
+            if (successRate > -1) {
+                System.out.println("File: " + filePath[2] + " Success rate: " + successRate + "%");
+                System.out.println("Successes: " + successes);
+                System.out.println("Kinda: " + kinda);
+                System.out.println("Failures: " + failures);
+                System.out.println("Time avg: " + timeAvg + "ms");
                 readInfoTextFileFromLocation(filePath, SONG);
-                // Also print time with 2 decimal places
-                System.out.printf("Avg time calculation for each snippet: %.2f ms\n", result[5]);
+                
+                for (Object[] stat : genreStats) {
+                    String genre = (String) stat[0];
+                    int success = (int) stat[1];
+                    int fail = (int) stat[2];
+                    System.out.println("Genre: " + genre + " | Success: " + success + " | Fail: " + fail);
+                }
             }
         }
     }
@@ -265,14 +323,14 @@ public class Main {
             return stftFile.getAbsolutePath();
         }
 
+
         audioSample a = new audioSample();
         a.setFile(filePath);
         int numSamples = a.getMaxSamples();
         double audioLength = a.getLength();
         System.out.printf("Audio length: %.2f seconds\n", audioLength);
         a.setNumSamples(numSamples);
-        a.setStepSize(1);
-        a.computeSamples();
+        a.computeSamplesStereo();
         int[] samples = a.getSamples();
         int sampleRate = a.getSampleRate();
 
@@ -544,6 +602,7 @@ public class Main {
         // List of distinct songs
         ArrayList<String> distinctSongs = new ArrayList<>();
 
+        // Made by ChatGPT
         // Compare vectors to each file in vectors
         for (int[] vector : inputVectors) {
             // Binary search for the vector[0] placement in databaseVectors only checking [0]
@@ -575,6 +634,7 @@ public class Main {
                     }
                 }
             }
+            // End of ChatGPT
 
             // Find first instance of [0] from the placement
             if (placement != -1) {
@@ -730,8 +790,8 @@ public class Main {
         // Create results2
         ArrayList<Object[]> results2 = new ArrayList<>();
 
-        // for the top 4 results
-        for (int i = 0; i < 6; i++) {
+        // for the top 10 results
+        for (int i = 0; i < 10; i++) {
             // If there is no result, break
             if (i >= results.size()) {
                 break;
@@ -755,7 +815,7 @@ public class Main {
             int offsetDifference = largestOffset - smallestOffset;
 
             // Divide by dividesize
-            int dividesize = 2;
+            int dividesize = 4;
             int step = (int) offsetDifference / dividesize;
             
             // Map to count occurrences of each offset
@@ -777,7 +837,6 @@ public class Main {
                 vectors.add(new int[]{start, count});
             }
 
-
             // Take 4 largest steps and plus and add to linearCount
             vectors.sort((a, b) -> b[1] - a[1]);
             int linearCount = 0;
@@ -791,6 +850,234 @@ public class Main {
             // Add to results2
             results2.add(new Object[]{ results.get(i)[0], linearCount});
         }
+
+        return results2;
+    }
+
+    public static Object compareVectorsSmart(String filePath, ArrayList<Object[]> databaseVectors) {
+        // Read vectors from file
+        ArrayList<int[]> inputVectors = new ArrayList<>();
+
+        try {
+            File file = new File(filePath);
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(" ");
+                inputVectors.add(new int[]{
+                    Integer.parseInt(parts[0]),
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3])
+                });
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // New object list for vectors found
+        ArrayList<Object[]> databaseVectorsFound = new ArrayList<>();
+
+        // List of distinct songs
+        ArrayList<String> distinctSongs = new ArrayList<>();
+
+        // Compare vectors to each file in vectors
+        for (int[] vector : inputVectors) {
+            // Binary search for the vector[0] placement in databaseVectors only checking [0]
+            int low = 0;
+            int high = databaseVectors.size() - 1;
+            int placement = -1;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                if ((int) databaseVectors.get(mid)[0] < vector[0]) {
+                    low = mid + 1;
+                } else if ((int) databaseVectors.get(mid)[0] > vector[0]) {
+                    high = mid - 1;
+                } else {
+                    // Now look for [1]
+                    if ((int) databaseVectors.get(mid)[1] < vector[1]) {
+                        low = mid + 1;
+                    } else if ((int) databaseVectors.get(mid)[1] > vector[1]) {
+                        high = mid - 1;
+                    } else {
+                        // Now look for [2]
+                        if ((int) databaseVectors.get(mid)[2] < vector[2]) {
+                            low = mid + 1;
+                        } else if ((int) databaseVectors.get(mid)[2] > vector[2]) {
+                            high = mid - 1;
+                        } else {
+                            placement = mid;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Find first instance of [0] from the placement
+            if (placement != -1) {
+                while (placement > 0 && (int) databaseVectors.get(placement - 1)[2] == vector[2]) {
+                    placement--;
+                }
+            }
+
+            // If placement is not -1, add to databaseVectorsFound
+            if (placement != -1) {
+                // While [0] matches keep adding vectors to databaseVectorsFound
+                while (placement < databaseVectors.size() && vector[0] == (int) databaseVectors.get(placement)[0]) {
+                    // Check if vector[1] and vector[2] match
+                    if (vector[1] == (int) databaseVectors.get(placement)[1] && vector[2] == (int) databaseVectors.get(placement)[2]) {
+                        // Add to databaseVectorsFound
+                        databaseVectorsFound.add(databaseVectors.get(placement));
+                        if (!distinctSongs.contains((String) databaseVectors.get(placement)[4])) {
+                            distinctSongs.add((String) databaseVectors.get(placement)[4]);
+                        }
+                    }
+                    placement++;
+                }
+            }
+        }
+
+        // Remove duplicates from vectors3
+        databaseVectorsFound = new ArrayList<>(databaseVectorsFound.stream().distinct().collect(Collectors.toList()));
+
+        // For each distinct song count how many vectors are in it
+        ArrayList<Object[]> results = new ArrayList<>();
+        for (String song : distinctSongs) {
+            // Count how many vectors are in the song
+            int count = 0;
+            for (Object[] dbVector : databaseVectorsFound) {
+                if (dbVector[4].equals(song)) {
+                    count++;
+                }
+            }
+            // Add to results
+            results.add(new Object[]{song, count});
+        }
+
+        // Sort results from count
+        results.sort((a, b) -> (int) b[1] - (int) a[1]);
+
+        // Create results2
+        ArrayList<Object[]> results2 = new ArrayList<>();
+
+        // for the top 8 results
+        for (int i = 0; i < 8; i++) {
+            // If there is no result, break
+            if (i >= results.size()) {
+                break;
+            }
+            // Gather all vectors from the song
+            ArrayList<Object[]> songVectors = new ArrayList<>();
+            for (Object[] dbVector : databaseVectorsFound) {
+                if (dbVector[4].equals(results.get(i)[0])) {
+                    songVectors.add(dbVector);
+                }
+            }
+
+            // Sort songVectors by offset
+            songVectors.sort((a, b) -> (int) a[3] - (int) b[3]);
+
+            // Create arraylist for points made of offset combined from song and input
+            ArrayList<int[]> points = new ArrayList<>();
+            for (int j = 0; j < songVectors.size(); j++) {
+                Object[] vectorObj = songVectors.get(j);
+                int[] vector = new int[]{
+                    (int) vectorObj[0],
+                    (int) vectorObj[1],
+                    (int) vectorObj[2],
+                    (int) vectorObj[3]
+                };
+                // If it matches the 3 first values with an input vector, add point with the 2 different offsets
+                for (int k = 0; k < inputVectors.size(); k++) {
+                    int[] inputVector = (int[]) inputVectors.get(k);
+                    if (vector[0] == inputVector[0] && vector[1] == inputVector[1] && vector[2] == inputVector[2]) {
+                        points.add(new int[]{vector[3], inputVector[3]});
+                    }
+                }
+            }
+
+            // Sort points by offset of the song vector
+            points.sort((a, b) -> (int) a[0] - (int) b[0]);
+
+            // inputVectors sort
+            inputVectors.sort((a, b) -> (int) a[3] - (int) b[3]);
+
+            // Sort songVectors by offset
+            songVectors.sort((a, b) -> (int) a[3] - (int) b[3]);
+
+            // Get largest and smallest offset of input vector from inputVector
+            int smallestOffset = (int) inputVectors.get(0)[3];
+            int largestOffset = (int) inputVectors.get(inputVectors.size() - 1)[3];
+            // Get largest and smallest offset of song vector from songVectors
+            int smallestOffsetSong = (int) songVectors.get(0)[3];
+            int largestOffsetSong = (int) songVectors.get(songVectors.size() - 1)[3];
+
+            // Create 2D array
+            int[][] offsetArray = new int[largestOffset + 1][largestOffsetSong + 1];
+
+            // Set points to 1 (reverse y-axis)
+            for (int[] point : points) {
+                int y = offsetArray.length - 1 - point[1];
+                int x = point[0];
+                if (y >= 0 && y < offsetArray.length && x >= 0 && x < offsetArray[0].length) {
+                    offsetArray[y][x] = 1;
+                }
+            }
+
+            // Find diagonal (bottom-left to top-right) with most points in a width-3 band
+            int diagonalSize = 2;
+            int maxCount = 0;
+            int maxIndex = 0; // This will be the starting x position
+
+            for (int startCol = 0; startCol <= offsetArray[0].length - diagonalSize; startCol++) {
+                int count = 0;
+                for (int startRow = 0; startRow < offsetArray.length; startRow++) {
+                    for (int ii = 0; ii < diagonalSize; ii++) {
+                        int row = offsetArray.length - 1 - startRow;
+                        int col = startCol + ii + startRow;
+                        if (row >= 0 && col < offsetArray[0].length) {
+                            count += offsetArray[row][col];
+                        }
+                    }
+                }
+                if (count > maxCount) {
+                    maxCount = count;
+                    maxIndex = startCol; // or track (startRow, startCol) if needed
+                }
+            }
+
+            // // Print max count and index and name of song
+            // System.out.println("Song: " + results.get(i)[0]);
+            // System.out.println("Max count: " + maxCount);
+            // System.out.println("Max index: " + maxIndex);
+
+            // Create new array with the same size as offsetArray
+            int[][] offsetArray2 = new int[largestOffset + 1][largestOffsetSong + 1];
+            
+            int startCol = maxIndex;
+            // for (int startCol = maxIndex; startCol <= offsetArray[0].length; startCol++) {
+                for (int startRow = 0; startRow < offsetArray.length; startRow++) {
+                    for (int ii = 0; ii < diagonalSize; ii++) {
+                        int row = offsetArray.length - 1 - startRow;
+                        int col = startCol + ii + startRow;
+                        if (row >= 0 && col < offsetArray[0].length) {
+                            offsetArray2[row][col] = offsetArray[row][col];
+                        }
+                    }
+                }
+            // }
+
+            // // Write to text file using TextSpectrumToImage
+            // TextSpectrumToImage.ArrayToImageWhite(offsetArray, new File("output/" + results.get(i)[0] + "_offset.png"));
+            // TextSpectrumToImage.ArrayToImageWhite(offsetArray2, new File("output/" + results.get(i)[0] + "_offsetproc.png"));
+
+            // Add max count to results2
+            results2.add(new Object[]{ results.get(i)[0], maxCount});
+        }
+
+        // Sort results2 from count
+        results2.sort((a, b) -> (int) b[1] - (int) a[1]);
 
         return results2;
     }
@@ -813,11 +1100,44 @@ public class Main {
             String fileNameNew = fileNameParts[fileNameParts.length - 1];
             // Now split file with _ and select the 2nd and 3rd part
             String[] fileNameParts2 = fileNameNew.split("_");
+            String[] genres = new String[0];
+            // With fileNameParts2[1], find the genres of the file
+            String artistAndAlbum = fileNameParts2[1];
+            String songList = "songList";
+            // Initiate folder file songList
+            File folder = new File(songList);
+            // Get all folders in songList
+            // If statement: if folder does not exist
+            if (folder.exists()) {
+                File[] folders = folder.listFiles(File::isDirectory);
+                // For each folder, check if it contains the artistAndAlbum
+                for (File folderFile : folders) {
+                    // Check for each folder in the folder if it contains the artistAndAlbum
+                    File[] files = folderFile.listFiles();
+                    for (File file : files) {
+                        if (file.getName().contains(artistAndAlbum)) {
+                            genres = folderFile.getName().split("_");
+                        }
+                    }
+                }
+            }
+
             String fileNameNew2 = fileNameParts2[1] + "_" + fileNameParts2[2];
             // Print input filename
             System.out.println("\nInput file: " + fileNameNew2 + "_" + fileNameParts2[3]);
+            // If genres is empty, print "No genres found"
+            if (genres.length == 0 || (genres.length == 1 && genres[0].isEmpty())) {
+                System.out.println("No genres found.");
+            } else {
+                System.out.print("Genres: ");
+                for (String genre : genres) {
+                    System.out.print(genre + " ");
+                }
+                System.out.println();
+            }
+
             // Print results where each result gets 15 chars of length, so print song and count
-            for (int i = 1; i < 6; i++) {
+            for (int i = 1; i < 7; i++) {
                 if (i < ((ArrayList<Object[]>) result[1]).size()) {
                     Object[] songResult = ((ArrayList<Object[]>) result[1]).get(i - 1);
                     String songName = (String) songResult[0];
@@ -825,7 +1145,7 @@ public class Main {
                     // Print song name and count
                     System.out.printf("%-22s Found vectors: %d", songName, count);
                     // If the fileNameNew2 match the song with the songname substring as long as the fileNameNew2, print "success"
-                    if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+                    if (songName.startsWith(fileNameNew2) && songName.charAt(fileNameNew2.length()) == '.') {
                         System.out.println(" - Correct");
                     } else {
                         System.out.println();
@@ -833,22 +1153,24 @@ public class Main {
                 }
             }
 
-            int songPos = 0;
-
+            int songPos = -1;
             // For each result in the results
-            for (int j = 1; j < ((ArrayList<Object[]>) result[1]).size(); j++) {
+            for (int j = 0; j < ((ArrayList<Object[]>) result[1]).size(); j++) {
                 Object[] songResult = ((ArrayList<Object[]>) result[1]).get(j);
                 String songName = (String) songResult[0];
                 // If it's the correct song, add to resultsList save position
-                if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+                if (songName.startsWith(fileNameNew2) && songName.charAt(fileNameNew2.length()) == '.') {
                     songPos = j;
                     break;
                 }
             }
 
-            Object[] resultString = new Object[2];
+
+            Object[] resultString = new Object[3];
             resultString[0] = fileNameNew2 + "_" + fileNameParts2[3];
             resultString[1] = songPos;
+            resultString[2] = genres;
+
             resultsList.add(resultString);
         }
 
@@ -882,7 +1204,7 @@ public class Main {
                 Object[] songResult = ((ArrayList<Object[]>) result[1]).get(j);
                 String songName = (String) songResult[0];
                 // If it's the correct song, add to resultsList save position
-                if (songName.substring(0, fileNameNew2.length()).equals(fileNameNew2)) {
+                if (songName.startsWith(fileNameNew2) && songName.charAt(fileNameNew2.length()) == '.') {
                     songPos = j;
                     break;
                 }
@@ -982,6 +1304,7 @@ public class Main {
         }
     }
 
+    // Made by ChatGPT
     public static void addToSettings(ArrayList<Object[]> settings, int[] fourierQualityList, int[] windowSizeList, int[] overlapList, double[] minFreqList, double[] maxFreqList, int[] binsList, int[] targetHeightList, int[] targetLengthList, int[] lengthToTargetList) {
         // For each combination add to settings list
         for (int i = 0; i < fourierQualityList.length; i++) {
@@ -1014,6 +1337,7 @@ public class Main {
             }
         }
     }
+    // End of ChatGPT
 
     public static void createInfoTextFile(ArrayList<Object[]> settings, int iii, String[] inputType) {
         int calcTimeFFT = 0;
@@ -1312,6 +1636,7 @@ public class Main {
             e.printStackTrace();
         }
 
+        // Made by ChatGPT
         // Print status and all values
         System.out.println("INFO.txt file in " + fourierOutputFolder);
         System.out.println("calcTimeFFT: " + calcTimeFFTCur);
@@ -1325,6 +1650,7 @@ public class Main {
         System.out.println("numberOfSongsVec: " + numberOfSongsVecCur);
         // Print status
         System.out.println("INFO.txt file read successfully.");
+        // End of ChatGPT
     }
 
     public static void readInfoTextFileFromLocation(String[] filePath, String[] inputType) {
@@ -1380,7 +1706,8 @@ public class Main {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
+        
+        // Made by ChatGPT
         // Convert song duration from ms to seconds
         double songTimeFFTSeconds = songTimeFFTCur / 1000.0;
         double songTimeVecSeconds = songTimeVecCur / 1000.0;
@@ -1411,6 +1738,7 @@ public class Main {
         // Print total file size in MB
         System.out.printf("Total file size of FFT: %.2f MB%n", (fileSizeFFTCur / 1024.0 / 1024.0));
         System.out.printf("Total file size of vector: %.2f MB%n", (fileSizeVecCur / 1024.0 / 1024.0));
+        // End of ChatGPT
     }
 
     public static void printFileNames(List<Object[]> fileNames) {

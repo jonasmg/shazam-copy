@@ -57,7 +57,8 @@ public class ShortTimeFourierTransform {
             
             // Calculate magnitude and store in spectrogram
             for (int i = 0; i < desiredFrequencyBins; i++) {
-                double magnitude = fftResult[i].magnitude();
+                // double magnitude = fftResult[i].magnitude();
+                double magnitude = fftResult[i].getRe(); // Use real part for magnitude
                 stftResult[desiredFrequencyBins-i-1][currentFrame / windowSizeSamples] = (int) (magnitude * 255);
             }
         }
@@ -143,20 +144,44 @@ public class ShortTimeFourierTransform {
     
         // Select desired frequency bins
         Complex[] freqBins = new Complex[desiredFrequencyBins];
+
+        // for (int i = 0; i < desiredFrequencyBins; i++) {
+        //     double targetFreq = minFreq + i * frequencyResolution;
+        //     int k = (int) Math.round(targetFreq * N / sampleRate);
+        //     if (k < fft.length) {
+        //         freqBins[i] = fft[k];
+        //     } else {
+        //         freqBins[i] = new Complex(0, 0);
+        //     }
+        // }
+
         for (int i = 0; i < desiredFrequencyBins; i++) {
-            double targetFreq = minFreq + i * frequencyResolution;
-            int k = (int) Math.round(targetFreq * N / sampleRate);
-            if (k < fft.length) {
-                freqBins[i] = fft[k];
+            double freqStart = minFreq + i * frequencyResolution;
+            double freqEnd = freqStart + frequencyResolution;
+
+            int kStart = (int) Math.floor(freqStart * N / sampleRate);
+            int kEnd = (int) Math.ceil(freqEnd * N / sampleRate);
+
+            int count = 0;
+            double sumMagnitude = 0;
+            for (int k = kStart; k < kEnd && k < fft.length; k++) {
+                sumMagnitude += fft[k].magnitude();
+                count++;
+            }
+
+            if (count > 0) {
+                double avgMagnitude = sumMagnitude / count;
+                freqBins[i] = new Complex(avgMagnitude, 0);
             } else {
                 freqBins[i] = new Complex(0, 0);
             }
         }
+
     
         return freqBins;
     }
     
-    // Standard recursive Cooley-Tukey FFT
+    // Standard recursive FFT
     private static Complex[] fftRecursive(Complex[] x) {
         int N = x.length;
         if (N == 1) return new Complex[] { x[0] };
