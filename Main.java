@@ -22,7 +22,7 @@ public class Main {
         List<Object[]> snippetNames = new ArrayList<>();
 
         // Get files of audio and snippets
-        fileNames = FileProcessor.getFiles2("songList");
+        fileNames = FileProcessor.getFiles2("SongList");
         snippetNames = FileProcessor.getSnippetFileNames("snippetListGenerated20");
 
         // Print filenames
@@ -30,7 +30,7 @@ public class Main {
         printFileNames(snippetNames);
 
         int[] fourierQalityList = {700};
-        int[] windowSizeList = {350};
+        int[] windowSizeList = {200,350};
         int[] overlapList = {0};
         double[] minFreqList = {200};
         double[] maxFreqList = {2000.0};
@@ -501,18 +501,18 @@ public class Main {
         BinCalculations.logorithmic_bins(proccessedFFT, bins, numRows, numCols, logBase);
         // BinCalculations.linear_bins(proccessedFFT, bins, numRows, numCols);
 
-        // // Create new file for processed stft image png file
-        // String processedFileName = vectorOutputFolder + stftFileName + "_processed.png";
-        // File processedFile = new File(processedFileName);
-        // // Create the file if it doesn't exist
-        // try {
-        //     processedFile.createNewFile();
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
+        // Create new file for processed stft image png file
+        String processedFileName = vectorOutputFolder + stftFileName + "_processed.png";
+        File processedFile = new File(processedFileName);
+        // Create the file if it doesn't exist
+        try {
+            processedFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // // Write to text file using TextSpectrumToImage
-        // TextSpectrumToImage.ArrayToImageWhite(proccessedFFT, processedFile);
+        // Write to text file using TextSpectrumToImage
+        TextSpectrumToImage.ArrayToImageWhite(proccessedFFT, processedFile);
 
         // Set target zone
         int targetHeight = targetZone[0];
@@ -1007,10 +1007,10 @@ public class Main {
             songVectors.sort((a, b) -> (int) a[3] - (int) b[3]);
 
             // Get largest and smallest offset of input vector from inputVector
-            int smallestOffset = (int) inputVectors.get(0)[3];
+            // int smallestOffset = (int) inputVectors.get(0)[3];
             int largestOffset = (int) inputVectors.get(inputVectors.size() - 1)[3];
             // Get largest and smallest offset of song vector from songVectors
-            int smallestOffsetSong = (int) songVectors.get(0)[3];
+            // int smallestOffsetSong = (int) songVectors.get(0)[3];
             int largestOffsetSong = (int) songVectors.get(songVectors.size() - 1)[3];
 
             // Create 2D array
@@ -1283,8 +1283,8 @@ public class Main {
             addInfoTextFile(settings, iii, inputType, (int) timeMs.get(), (int) songTimeFFT, (int) fileSizeFFT, numberOfSongsFFT, 0, 0, 0, 0);
         }
 
-        // // Create image of spectrum
-        // TextSpectrumToImage.FileToImage(fftFilePath);
+        // Create image of spectrum
+        TextSpectrumToImage.FileToImage(fftFilePath);
         
         timeMs.set(0);
         String vectorFilePath = createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, fftFilePath, timeMs);

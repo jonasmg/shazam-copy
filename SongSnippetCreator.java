@@ -1,21 +1,24 @@
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SongSnippetCreator {
 
     public static void main(String[] args) {
-        String songDatabase = "songList/";
-        int length = 32; // Seconds
+        String songDatabase = "SongList/";
+        int length = 60; // Seconds
         String snippetListFolder = "snippetListGenerated" + length +"/";
 
         List<Object[]> fileNames = FileProcessor.getFiles2(songDatabase);
 
-        for (int i = 0; i < 100; i++) {
+        if (fileNames.isEmpty()) {
+            System.out.println("No files found in the specified directory.");
+            return;
+        }
+
+        for (int i = 0; i < 5; i++) {
             int randomIndex = (int) (Math.random() * fileNames.size());
             Object[] fileInfo = fileNames.get(randomIndex);
             String fileName = (String) fileInfo[0];

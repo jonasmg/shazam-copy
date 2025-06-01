@@ -30,8 +30,10 @@ public class FileProcessor {
         // Get all folders from rootFolder and put into list
         File[] listOfFoldersInRoot = rootFolder.listFiles();
         List<File> listOfGenreFolders = new ArrayList<>();
+        
         // If file is not empty
         if (listOfFoldersInRoot == null || listOfFoldersInRoot.length == 0) {
+            System.out.println("No folders found in the specified directory.");
             return new ArrayList<>(); // Return empty list if no folders found
         }
         
