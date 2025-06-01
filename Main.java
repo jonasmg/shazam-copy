@@ -14,6 +14,8 @@ public class Main {
     public static final String[] SONG = {"FourierLists", "VectorLists"};
     public static final String[] SNIPPET = {"FourierListsInput", "vectorListsInput"};
     public static final String BLACKLIST = "INFO.txt";
+    public static final String BLACKLIST2 = ".gitkeep";
+
     
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
@@ -23,7 +25,7 @@ public class Main {
 
         // Get files of audio and snippets
         fileNames = FileProcessor.getFiles2("SongList");
-        snippetNames = FileProcessor.getSnippetFileNames("snippetListGenerated20");
+        snippetNames = FileProcessor.getSnippetFileNames("snippetListQuality");
 
         // Print filenames
         printFileNames(fileNames);
@@ -112,7 +114,7 @@ public class Main {
                     String fileName = file.getName();
                             
                     // If it's a text file open and write all lines to the database with the name of the file added to the start
-                    if (fileName.endsWith(".txt") && !fileName.equals(BLACKLIST)) {
+                    if (fileName.endsWith(".txt") && !fileName.equals(BLACKLIST) && !fileName.equals(BLACKLIST2)) {
                         // Open the file
                         Scanner scanner = null;
                         try {
@@ -162,7 +164,7 @@ public class Main {
                 // For each file in the folder remove if not txt file
                 List<File> snippetVectorFilesList = new ArrayList<>();
                 for (File snippetVectorFile : snippetVectorFiles) {
-                    if (snippetVectorFile.getName().endsWith(".txt") && !snippetVectorFile.getName().equals(BLACKLIST)) {
+                    if (snippetVectorFile.getName().endsWith(".txt") && !snippetVectorFile.getName().equals(BLACKLIST) && !snippetVectorFile.getName().equals(BLACKLIST2)) {
                         snippetVectorFilesList.add(snippetVectorFile);
                     }
                 }
@@ -501,18 +503,18 @@ public class Main {
         BinCalculations.logorithmic_bins(proccessedFFT, bins, numRows, numCols, logBase);
         // BinCalculations.linear_bins(proccessedFFT, bins, numRows, numCols);
 
-        // Create new file for processed stft image png file
-        String processedFileName = vectorOutputFolder + stftFileName + "_processed.png";
-        File processedFile = new File(processedFileName);
-        // Create the file if it doesn't exist
-        try {
-            processedFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // // Create new file for processed stft image png file
+        // String processedFileName = vectorOutputFolder + stftFileName + "_processed.png";
+        // File processedFile = new File(processedFileName);
+        // // Create the file if it doesn't exist
+        // try {
+        //     processedFile.createNewFile();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
 
-        // Write to text file using TextSpectrumToImage
-        TextSpectrumToImage.ArrayToImageWhite(proccessedFFT, processedFile);
+        // // Write to text file using TextSpectrumToImage
+        // TextSpectrumToImage.ArrayToImageWhite(proccessedFFT, processedFile);
 
         // Set target zone
         int targetHeight = targetZone[0];
@@ -1283,8 +1285,8 @@ public class Main {
             addInfoTextFile(settings, iii, inputType, (int) timeMs.get(), (int) songTimeFFT, (int) fileSizeFFT, numberOfSongsFFT, 0, 0, 0, 0);
         }
 
-        // Create image of spectrum
-        TextSpectrumToImage.FileToImage(fftFilePath);
+        // // Create image of spectrum
+        // TextSpectrumToImage.FileToImage(fftFilePath);
         
         timeMs.set(0);
         String vectorFilePath = createVectorList(fileInfo, bins, targetZone, fourierOutputFolder, vectorOutputFolder, fftFilePath, timeMs);
