@@ -30,7 +30,7 @@ public class Main {
         printFileNames(snippetNames);
 
         int[] fourierQalityList = {700};
-        int[] windowSizeList = {200,350};
+        int[] windowSizeList = {350};
         int[] overlapList = {0};
         double[] minFreqList = {200};
         double[] maxFreqList = {2000.0};
