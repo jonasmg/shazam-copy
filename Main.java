@@ -25,7 +25,7 @@ public class Main {
 
         // Get files of audio and snippets
         fileNames = FileProcessor.getFiles2("SongList");
-        snippetNames = FileProcessor.getSnippetFileNames("snippetListQuality");
+        snippetNames = FileProcessor.getSnippetFileNames("snippetListGenerated20");
 
         // Print filenames
         printFileNames(fileNames);
