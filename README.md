@@ -31,3 +31,7 @@ You can rename the folder to something else and calculate the "snippetListQualit
 Just change the folder used for clips in the main file!
 
 Or you can look at the "snippetListQualityFullOutput.txt" in the "ResultsFolder", where I saved the output of all it prints with the current settings.
+
+
+# This is a new branch for combining audio clips
+I want to use it for adding radio static on clips
